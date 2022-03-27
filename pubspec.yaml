@@ -1,0 +1,82 @@
+name: jogingu_advanced
+description: A new Flutter project.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.16.1 <3.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+
+  # dependency injection
+  get_it: ^7.2.0
+
+  # state management
+  rxdart: ^0.27.3
+
+  # svg icon
+  flutter_svg: ^1.0.3
+
+  # laucher icon
+  flutter_launcher_icons: ^0.9.2
+
+  # data class
+  equatable: ^2.0.3
+
+  # nosql database
+  hive: ^2.0.6
+
+  # support for hive database
+  hive_flutter: ^1.1.0
+
+  # provide path of device
+  path_provider: ^2.0.9
+
+  # show mapbox
+  flutter_map: ^0.14.0
+
+  # get location to update
+  location: ^4.3.0
+
+  # encode polyline
+  google_polyline_algorithm: ^3.1.0
+
+  # for env
+  flutter_dotenv: ^5.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^1.0.0
+  hive_generator: ^1.1.2
+  build_runner: ^2.1.7
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - .env
+    - assets/
+    - assets/icons/
+    - assets/images/
+
+  
+  fonts:
+    - family: RaleWay
+      fonts:
+        - asset: assets/fonts/Raleway-Regular.ttf
+        - asset: assets/fonts/Raleway-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Raleway-Bold.ttf
+          weight: 700
