@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 
 class TimerService {
-  BehaviorSubject<int> timer = BehaviorSubject.seeded(0);
+  final BehaviorSubject<int> timer = BehaviorSubject.seeded(0);
   Stream<int> get timerStream => timer.stream;
   Sink<int> get timerSink => timer.sink;
 
@@ -13,7 +13,7 @@ class TimerService {
   void start({Duration? duration}) async {
     if (duration != null) this.duration = duration;
     _timer = Timer.periodic(this.duration, (_) {
-      timerSink.add(timer.value++);
+      timerSink.add(timer.value+1);
     });
   }
 
@@ -23,7 +23,7 @@ class TimerService {
 
   void resume() {
     _timer = Timer.periodic(duration, (_) {
-      timerSink.add(timer.value++);
+      timerSink.add(timer.value+1);
     });
   }
 

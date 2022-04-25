@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <meta-data android:name="com.mapbox.token" android:value="pk.eyJ1Ijoic3VkbzI0OCIsImEiOiJja3V2OWFjNjk2NnNhMnBxNm5vZXFjbnFyIn0.ehPEJpjmAIsW1cR2lGAPxg"/>
 

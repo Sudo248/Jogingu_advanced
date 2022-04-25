@@ -1,33 +1,55 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:jogingu_advanced/domain/utils/extentions.dart';
 import 'package:jogingu_advanced/resources/app_assets.dart';
 import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:jogingu_advanced/resources/app_styles.dart';
 
+import '../../domain/entities/run.dart';
+import '../utils/util.dart' show formatTime;
+
 class ItemRun extends StatelessWidget {
   final double height;
-  const ItemRun({Key? key, required this.height}) : super(key: key);
+  final Run run;
+  final Function(int id) onMenuClick;
+  const ItemRun(
+      {Key? key,
+      required this.height,
+      required this.run,
+      required this.onMenuClick})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       elevation: 8,
+      color: AppColors.carBackground,
       child: Container(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
         width: double.infinity,
         height: height,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _title(),
-            SizedBox(
-              height: height / 40,
-            ),
-            Text(
-              "Afternoon Run",
-              style: AppStyles.h4
-                  .copyWith(color: Colors.black, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.only(right: 5.0, left: 12.0),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _title(),
+                    SizedBox(
+                      height: height / 40,
+                    ),
+                    Text(
+                      run.name,
+                      style: AppStyles.h4.copyWith(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ]),
             ),
             SizedBox(
               height: height / 40,
@@ -36,15 +58,17 @@ class ItemRun extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _itemRunInfo("Distance", "5.03 km"),
+                  _itemRunInfo(
+                      "Distance", "${run.distance.toStringAsFixed(2)} km"),
                   const VerticalDivider(
                     thickness: 2,
                   ),
-                  _itemRunInfo("Pace", "7:25 /km"),
+                  _itemRunInfo(
+                      "Pace", "${run.avgSpeed.toStringAsFixed(2)} /km"),
                   const VerticalDivider(
                     thickness: 2,
                   ),
-                  _itemRunInfo("Time", "37m 18s"),
+                  _itemRunInfo("Time", run.timeRunning.toTime()),
                 ],
               ),
             ),
@@ -52,10 +76,24 @@ class ItemRun extends StatelessWidget {
               height: height / 50,
             ),
             Expanded(
-              child: Image.asset(
-                AppAssets.avatar,
-                fit: BoxFit.fitWidth,
+              child: Image.network(
+                run.image ??
+                    "https://www.dungplus.com/wp-content/uploads/2019/12/girl-xinh-1-480x600.jpg",
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
+                fit: BoxFit.fill,
               ),
+              //   child: CachedNetworkImage(
+              //     imageUrl: run.image ??
+              //         "https://www.dungplus.com/wp-content/uploads/2019/12/girl-xinh-1-480x600.jpg",
+              //     progressIndicatorBuilder: (context, url, downloadProgress) =>
+              //         CircularProgressIndicator(value: downloadProgress.progress),
+
+              //   ),
             )
           ],
         ),
@@ -65,6 +103,7 @@ class ItemRun extends StatelessWidget {
 
   Widget _title() {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const CircleAvatar(
           backgroundImage: AssetImage(AppAssets.avatar),
@@ -72,21 +111,32 @@ class ItemRun extends StatelessWidget {
         const SizedBox(
           width: 10,
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Sudo",
-              style: AppStyles.h5.copyWith(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Sudo",
+                style: AppStyles.h5.copyWith(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            Text(
-              "Yesterday at 5:45 PM - Luong Ngoc Quyen, Ha Dong, Ha Noi",
-              style: AppStyles.h6.copyWith(color: Colors.black),
-            ),
-          ],
+              Text(
+                "${formatTime(run.timeStart)} - ${run.location}",
+                style: AppStyles.h6.copyWith(color: Colors.black),
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            onMenuClick(run.key);
+          },
+          child: const Icon(
+            Icons.more_horiz,
+          ),
         ),
       ],
     );

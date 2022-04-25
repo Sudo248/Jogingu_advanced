@@ -1,3 +1,4 @@
+import 'package:jogingu_advanced/data/config/boxes.dart';
 import 'package:jogingu_advanced/data/models/notification_model.dart';
 import 'package:jogingu_advanced/data/models/run_model.dart';
 import 'package:jogingu_advanced/data/models/user_model.dart';
@@ -10,6 +11,4 @@ Future<void> setupDatabase() async {
   Hive.registerAdapter(UserModelAdapter());
   Hive.registerAdapter(NotificationModelAdapter());
   
-  
-
 }

@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:jogingu_advanced/app/pages/profile/view/profile_page.dart';
-import 'package:jogingu_advanced/app/pages/run/view/run_page.dart';
-import 'package:jogingu_advanced/app/pages/statistic/view/statistic_page.dart';
+import 'package:jogingu_advanced/app/pages/about/view/about_page.dart';
+import 'package:jogingu_advanced/app/pages/main/views/main_page.dart';
+import 'package:jogingu_advanced/app/pages/profile/views/profile_page.dart';
+import 'package:jogingu_advanced/app/pages/run/views/run_page.dart';
+import 'package:jogingu_advanced/app/pages/statistic/views/statistic_page.dart';
 import 'package:jogingu_advanced/app/pages/target/views/target_page.dart';
 import 'package:jogingu_advanced/app/routes/app_routes.dart';
 
-import '../pages/home/view/home_page.dart';
+import '../pages/home/views/home_page.dart';
+import '../pages/target/views/edit_target_tab.dart';
 
 abstract class AppPages {
   static Route<dynamic> getPages(RouteSettings route) {
     switch (route.name) {
+      case AppRoutes.main:
+        return MaterialPageRoute(builder: (ctx) => MainPage());
       case AppRoutes.run:
         return MaterialPageRoute(builder: (ctx) => RunPage());
       case AppRoutes.profile:
         return MaterialPageRoute(builder: (ctx) => ProfilePage());
-
+      case AppRoutes.about:
+        return MaterialPageRoute(builder: (ctx) => const AboutPage());
+      case AppRoutes.editTarget:
+        return MaterialPageRoute(builder: (ctx) => EditTargetPage());
       default:
         return MaterialPageRoute(builder: (ctx) => Container());
     }

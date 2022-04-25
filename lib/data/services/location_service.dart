@@ -1,13 +1,28 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:location/location.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 
 class LocationService {
   final Location _location = Location();
 
   StreamSubscription? streamSubscription;
+
+  final channelNotification = "NOTIFICSTION_CHANNEL";
+  final title = "Jogingu";
+  final description = "description for notification";
+
+  void notificatrion() async {
+    final data = await _location.changeNotificationOptions(
+        channelName: channelNotification,
+        title: title,
+        iconName: "iconName",
+        subtitle: "subtitle",
+        description: description,
+        color: Colors.red);
+  }
 
   void subcriptionUpdateLocation() {
     _location.enableBackgroundMode(enable: true);
@@ -23,8 +38,8 @@ class LocationService {
     }
   }
 
-  void unSubcriptionUpdateLocation() {
-    streamSubscription?.cancel();
+  Future<void> unSubcriptionUpdateLocation() async{
+    await streamSubscription?.cancel();
     _location.enableBackgroundMode(enable: false);
   }
 
@@ -41,6 +56,7 @@ class LocationService {
 
   Future<bool> checkAndRequestPermissionForUpdateLocation() async {
     var permissionGranted = await _location.hasPermission();
+    _location.requestPermission();
     if (permissionGranted == PermissionStatus.denied) {
       permissionGranted = await _location.requestPermission();
       if (permissionGranted != PermissionStatus.granted) {
@@ -60,9 +76,11 @@ class LocationService {
     ));
   }
 
-  void onChangedLocation(void Function(LocationData) onData) {
-    streamSubscription =
-        _location.onLocationChanged.listen((event) => onData(event));
+  void onChangedLocation(void Function(LocationData location) onData) {
+    streamSubscription = _location.onLocationChanged.listen((event) {
+      onData(event);
+    //   _location.changeNotificationOptions();
+    });
   }
 
   void onChangedLatLngLocation(void Function(LatLng) onData) {

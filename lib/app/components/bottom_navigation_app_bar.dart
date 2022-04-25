@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:jogingu_advanced/domain/common/logger.dart';
 import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:jogingu_advanced/resources/app_styles.dart';
 
@@ -59,14 +58,18 @@ class _BottomNavigationAppBarState extends State<BottomNavigationAppBar> {
       color: widget.backgroundColor ?? Colors.white,
       child: SizedBox(
         height: widget.height,
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          _buildItem(0),
-          _buildItem(1),
-          placeHolder,
-          _buildItem(2),
-          _buildItem(3),
-        ]),
+        child: FittedBox(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildItem(0),
+              _buildItem(1),
+              placeHolder,
+              _buildItem(2),
+              _buildItem(3),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -90,10 +93,15 @@ class _BottomNavigationAppBarState extends State<BottomNavigationAppBar> {
     return MaterialButton(
       shape: const CircleBorder(),
       onPressed: () {
+        if (widget.currentIndex == index) {
+          return;
+        }
         widget.onTapItem?.call(index);
-        setState(() {
-          widget.currentIndex = index;
-        });
+        if (index != 3) {
+          setState(() {
+            widget.currentIndex = index;
+          });
+        }
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

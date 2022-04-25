@@ -5,7 +5,7 @@ class Target extends Equatable {
   int calo;
   String? place;
   int recursive;
-  int timeStart;
+  DateTime? timeStart;
   int notifyBefore;
 
   Target({
@@ -13,7 +13,7 @@ class Target extends Equatable {
     this.calo = 0,
     this.place,
     this.recursive = 0,
-    this.timeStart = 0,
+    this.timeStart,
     this.notifyBefore = 10,
   });
 

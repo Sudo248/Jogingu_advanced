@@ -14,7 +14,7 @@ abstract class Status<T> {
   bool get isError => this is Error<T>;
 
   /// Get [data] value, returns null when the value is actually [error]
-  T? get data => isSuccess ? (this as Success).data : null;
+  T? get data => isSuccess ? (this as Success)._data : null;
 
   /// Get [errorMessage] value, returns null when the value is actually [data]
   Failure? get error => isError ? (this as Error)._error : null;
@@ -29,7 +29,7 @@ abstract class Status<T> {
   /// You can't build a null Widget.
   ///  [onIdle] can return SizeBox.shink() or Container() if you don't want to show anything in your screen
   ///
-  R? when<R>({
+  R? whenOrNull<R>({
     R Function()? onIdle,
     required R Function() onLoading,
     required R Function(T data) onSuccess,
@@ -45,6 +45,23 @@ abstract class Status<T> {
       return onIdle?.call();
     }
   }
+
+  R when<R>({
+    required R Function() onIdle,
+    required R Function() onLoading,
+    required R Function(T data) onSuccess,
+    required R Function(Failure error) onError,
+  }) {
+    if (isLoading) {
+      return onLoading();
+    } else if (isSuccess) {
+      return onSuccess((this as Success)._data);
+    } else if (isError) {
+      return onError((this as Error)._error);
+    } else {
+      return onIdle();
+    }
+  }
 }
 
 class Idle<T> extends Status<T> {}
@@ -53,7 +70,7 @@ class Loading<T> extends Status<T> {}
 
 class Success<T> extends Status<T> {
   final T? _data;
-  Success(this._data);
+  Success([this._data]);
 }
 
 class Error<T> extends Status<T> {

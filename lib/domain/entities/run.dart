@@ -1,9 +1,9 @@
-import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
 
 class Run extends Equatable {
   final String runId;
+  final int key;
   final String name;
   final double distance;
   final double avgSpeed;
@@ -14,17 +14,19 @@ class Run extends Equatable {
   final int stepCount;
   final String location;
 
-  const Run(
-      {required this.runId,
-      required this.name,
-      required this.distance,
-      required this.avgSpeed,
-      required this.timeRunning,
-      this.image,
-      required this.caloBunred,
-      required this.timeStart,
-      required this.stepCount,
-      required this.location});
+  const Run({
+    required this.runId,
+	required this.key,
+    required this.name,
+    required this.distance,
+    required this.avgSpeed,
+    required this.timeRunning,
+    this.image,
+    required this.caloBunred,
+    required this.timeStart,
+    required this.stepCount,
+    required this.location,
+  });
 
   @override
   List<Object?> get props => [

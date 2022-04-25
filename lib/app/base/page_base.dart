@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:jogingu_advanced/app/base/bloc_base.dart';
 import 'package:jogingu_advanced/domain/common/logger.dart';
@@ -14,13 +15,13 @@ abstract class PageBase<@required T extends BlocBase> extends StatefulWidget {
   @mustCallSuper
   void onInit() {
     bloc.onInit();
-    Logger.success(key: "onInit ${toString()}", message: "success");
+    Logger.success(message: "onInit ${toString()}");
   }
 
   @mustCallSuper
   void onDispose() {
     bloc.onDispose();
-	Logger.success(key: "onDispose ${toString()}", message: "success");
+    Logger.success(message: "onDispose ${toString()}");
   }
 
   @override
