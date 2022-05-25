@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:jogingu_advanced/app/base/page_base.dart';
+import 'package:jogingu_advanced/app/base/base_page.dart';
 import 'package:jogingu_advanced/app/pages/run/views/run_action_button.dart';
 import 'package:jogingu_advanced/app/pages/run/views/run_bottom_bar.dart';
 import 'package:jogingu_advanced/app/pages/run/bloc/run_bloc.dart';
@@ -11,14 +11,16 @@ import 'package:jogingu_advanced/domain/common/status.dart';
 import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:jogingu_advanced/resources/app_styles.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'package:rxdart/rxdart.dart';
 
-class RunPage extends PageBase<RunBloc> {
-  RunPage({Key? key}) : super(key: key);
+class RunPage extends BasePage<RunBloc> {
   late final Size size;
+
+  RunPage({Key? key}) : super(key: key) {
+    size = bloc.globalData.size;
+  }
+
   @override
   Widget build(BuildContext context) {
-    size = MediaQuery.of(context).size;
     double heightScreen = size.height;
     return WillPopScope(
       onWillPop: () => onBackPress(context),
@@ -39,12 +41,14 @@ class RunPage extends PageBase<RunBloc> {
                       child: CircularProgressIndicator(),
                     );
                   }
+                  // return Container(color: Colors.blue, width: double.infinity, height: double.infinity,);
                   return MapboxMap(
                       accessToken: Constants.accessToken,
                       styleString: Constants.mapStyle,
                       initialCameraPosition: CameraPosition(
-                          target: bloc.defaultLocation,
-                          zoom: Constants.defaultZoom),
+                        target: bloc.defaultLocation,
+                        zoom: Constants.defaultZoom,
+                      ),
                       minMaxZoomPreference: const MinMaxZoomPreference(
                         Constants.minZoom,
                         Constants.maxZoom,
@@ -99,7 +103,7 @@ class RunPage extends PageBase<RunBloc> {
                 height: heightScreen * 0.3,
                 actionButton: RunActionButton(
                   runStateStream: bloc.runStateStream,
-                  disctanceStream: bloc.distanceStream,
+                  distanceStream: bloc.distanceStream,
                   onStartClick: bloc.onStartClick,
                   onFinishClick: () {
                     _showDialog(context);

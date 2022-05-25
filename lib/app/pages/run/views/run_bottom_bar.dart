@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:jogingu_advanced/domain/common/logger.dart';
-import 'package:jogingu_advanced/domain/utils/extentions.dart';
+import 'package:jogingu_advanced/domain/utils/extensions.dart';
 import 'package:jogingu_advanced/resources/app_colors.dart';
-import 'package:jogingu_advanced/resources/app_strings.dart';
 import 'package:jogingu_advanced/resources/app_styles.dart';
 
 class RunBottomBar extends StatefulWidget {

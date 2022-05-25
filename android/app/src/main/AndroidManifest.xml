@@ -11,13 +11,15 @@
     <meta-data android:name="com.mapbox.token" android:value="pk.eyJ1Ijoic3VkbzI0OCIsImEiOiJja3V2OWFjNjk2NnNhMnBxNm5vZXFjbnFyIn0.ehPEJpjmAIsW1cR2lGAPxg"/>
 
    <application
-        android:label="jogingu_advanced"
+        android:label="Jogingu"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:requestLegacyExternalStorage="true">
 
         <activity
             android:name=".MainActivity"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"

@@ -38,7 +38,7 @@ class TargetPref {
           calo: await calo,
           place: await place,
           recursive: await recursive,
-          timeStart: DateTime.fromMicrosecondsSinceEpoch(await timeStart),
+          timeStart: DateTime.fromMillisecondsSinceEpoch(await timeStart),
           notifyBefore: await notifyBefore),
     );
   }

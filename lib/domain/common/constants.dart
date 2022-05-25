@@ -1,4 +1,10 @@
 class Constants {
+  static const String androidChannelId = "CHANNEL_ID";
+  static const String androidChannelName = "CHANNEL_NAME";
+  static const String androidChannelDescription = "CHANNEL_DESCRIPTION";
+  static const String? androidNotificationIcon = null; //"@mipmap/ic_launcher";
+  static const int channelIdNotificationDaily = 1;
+
   static const int minutaDuration = 60;
   static const int hourDuration = 3600;
 
@@ -10,7 +16,7 @@ class Constants {
   static const String mapStyle =
       "mapbox://styles/sudo248/cl0lth5mb000415qq5j6u009y";
 
-  static const double maxZoom = 16.5;//18.4;//17.5;
+  static const double maxZoom = 16.5; //18.4;//17.5;
   static const double minZoom = 5.0;
   static const double defaultZoom = 16.0;
   static const double lineWidth = 3.5;

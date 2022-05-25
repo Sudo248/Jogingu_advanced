@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 part 'user_model.g.dart';
 
 @HiveType(typeId: 2)
-class UserModel {
+class UserModel extends HiveObject{
   @HiveField(0)
   late String? firstName;
   @HiveField(1)
@@ -18,12 +18,10 @@ class UserModel {
   @HiveField(6)
   late int? birthdayInMiliseconds;
   @HiveField(7)
-  late int? age;
+  late double? height;
   @HiveField(8)
-  late int? height;
+  late double? weight;
   @HiveField(9)
-  late int? weight;
-  @HiveField(10)
   late String? avatarUrl;
 
 	UserModel({
@@ -34,7 +32,6 @@ class UserModel {
 		this.primarySport,
 		this.genderIndex = 0,
 		this.birthdayInMiliseconds,
-		this.age,
 		this.height,
 		this.weight,
 		this.avatarUrl,

@@ -1,28 +1,40 @@
-import 'package:flutter/material.dart';
+import 'package:jogingu_advanced/app/base/base_fragment_route.dart';
 import 'package:jogingu_advanced/app/base/bloc_base.dart';
-import 'package:jogingu_advanced/app/base/page_base.dart';
-import 'package:jogingu_advanced/app/pages/home/views/home_page.dart';
+import 'package:jogingu_advanced/app/base/base_fragment.dart';
 import 'package:jogingu_advanced/app/routes/app_pages.dart';
 import 'package:jogingu_advanced/app/routes/app_routes.dart';
-import 'package:jogingu_advanced/domain/common/constants.dart';
 import 'package:jogingu_advanced/domain/common/logger.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../../../data/shared_preference/app_pref.dart';
+
 class MainBloc extends BlocBase {
-  final fragments = AppPages.getFragments();
+  final AppPref pref;
+  final onGenerateRoute = AppPages.getFragmentsByIndex;
 
-  late final BehaviorSubject<Map<String, dynamic>> currentFragment;
+  MainBloc({required this.pref}) {
+    fragmentRoute = BehaviorSubject.seeded(onGenerateRoute(0));
+    // installMap();
+  }
 
-  Sink<Map<String, dynamic>> get currentFragmentSink => currentFragment.sink;
-  Stream<Map<String, dynamic>> get currentFragmentStream =>
-      currentFragment.stream;
+  // final fragments = AppPages.getFragments();
 
-	  int currentFragmentIndex = 0;
+  late final BehaviorSubject<BaseFragmentRoute> fragmentRoute;
 
-  MainBloc() {
-    currentFragment = BehaviorSubject.seeded(fragments[0]);
-    installMap();
+  Sink<BaseFragmentRoute> get fragmentSink => fragmentRoute.sink;
+  Stream<BaseFragmentRoute> get fragmentStream => fragmentRoute.stream;
+
+  int currentFragmentIndex = 0;
+
+  @override
+  void onDispose() {
+    // for (BaseFragment fragment in fragments) {
+    //   fragment.bloc.onDispose();
+    // }
+  }
+
+  @override
+  void onInit() async {
   }
 
   void installMap() async {
@@ -55,29 +67,33 @@ class MainBloc extends BlocBase {
     }
   }
 
-  void navigateToPage(String route) async {
-    navigator.navigateTo(route);
+  Future<bool> get canRun => pref.canRun;
+
+  Future<T?> navigateToPage<T>(String route, {Object? arguments}) async {
+    return navigator.navigateTo<T>(route, arguments: arguments);
   }
 
-  void navigateOffToPage(String route) async {
-    navigator.navigateOff(route);
-  }
-
-  void navigateToFragment(int index) async {
-    if (index == 3) {
-      navigator.navigateTo(AppRoutes.profile);
-    } else {
-      currentFragmentSink.add(fragments[index]);
+  void prepareToRun() async {
+    final isSaved = await navigateToPage(AppRoutes.profile, arguments: "prepareToRun") ?? false;
+    // print("prepareToRun $isSaved");
+    if (isSaved) {
+      await pref.setCanRun(true);
+      navigateOffToPage(AppRoutes.run);
     }
   }
 
-  @override
-  void onDispose() {
-    // TODO: implement onDispose
+  Future<void> navigateOffToPage(String route, {Object? arguments}) async {
+    navigator.navigateOff(route, arguments: arguments);
   }
 
-  @override
-  void onInit() {
-    // TODO: implement onInit
+  Future<void> navigateToFragment(int index) async {
+    if (index == 3) {
+      final isSaved = await navigateToPage(AppRoutes.profile);
+      if (isSaved) {
+        await pref.setCanRun(true);
+      }
+    } else {
+      fragmentSink.add(onGenerateRoute(index));
+    }
   }
 }

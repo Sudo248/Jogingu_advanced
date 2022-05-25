@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:jogingu_advanced/app/pages/splash/bloc/splash_bloc.dart';
 import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:jogingu_advanced/resources/app_strings.dart';
@@ -22,6 +25,11 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void dispose() {
     bloc.onDispose();
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+
     super.dispose();
   }
 
@@ -38,3 +46,20 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 }
+
+// class SplashPage extends PageBase<SplashBloc>{
+//   @override
+//   Widget build(BuildContext context) {
+//      print("build SplashPage");
+//     return const Scaffold(
+//       backgroundColor: AppColors.backgroundColor,
+//       body: Center(
+//         child: Text(
+//           AppStrings.appName,
+//           style: AppStyles.h3,
+//         ),
+//       ),
+//     );
+//   }
+	
+// }

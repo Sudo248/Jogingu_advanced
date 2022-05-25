@@ -26,8 +26,8 @@ class StepCounterService {
   void subscribeStepCounterService() {
     pedometerStreamSubscription =
         Pedometer.stepCountStream.listen(onPedestrianStepCount);
-    pedometerStreamSubscription.onError((_) {
-      Logger.error(message: "pedometer Stream Subscription");
+    pedometerStreamSubscription.onError((error) {
+      Logger.error(message: "pedometer Stream Subscription: $error");
       pedometerStreamSubscription.cancel();
       sensorStreamSubscription =
           accelerometerEvents.listen(onSenSorStepCounter);
@@ -89,7 +89,7 @@ class StepCounterService {
 //     }
 //   }
 
-  void onSenSorStepCounter(AccelerometerEvent event) async {
+  Future<void> onSenSorStepCounter(AccelerometerEvent event) async {
     if (isRunning) {
       double y = event.y; //- 9.8;
       final magnitude = sqrt(event.x * event.x + y * y + event.z * event.z);

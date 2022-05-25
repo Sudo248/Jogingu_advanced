@@ -8,15 +8,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../domain/common/status.dart';
 import '../models/run_model.dart';
-import '../extensions/datetime.dart';
 
 class RunRepositoryImpl implements RunRepository {
-  late Box<RunModel> runBox;
+  Box<RunModel>? runBox;
 
   @override
-  Future<void> onDispose() async {
-
-  }
+  Future<void> onDispose() async {}
 
   @override
   Future<void> onInit() async {}
@@ -25,14 +22,14 @@ class RunRepositoryImpl implements RunRepository {
   Future<Status> delete(dynamic key) async {
     try {
       runBox = await Boxes.I.runBox;
-      await runBox.delete(key);
-      await runBox.compact();
+      await runBox?.delete(key);
+      await runBox?.compact();
       Logger.success(message: "delete run $key");
-      runBox.close();
+      runBox?.close();
       return Future.value(Success());
     } catch (e) {
       Logger.error(message: "delete run $key");
-      runBox.close();
+      runBox?.close();
       return Future.value(Error(const DefaultError("Error when delete run")));
     }
   }
@@ -41,13 +38,13 @@ class RunRepositoryImpl implements RunRepository {
   Future<Status> add(Run run) async {
     try {
       runBox = await Boxes.I.runBox;
-      await runBox.add(run.toRunModel());
+      await runBox?.add(run.toRunModel());
       Logger.success(message: "add run");
-      runBox.close();
+      runBox?.close();
       return Future.value(Success());
     } catch (e) {
       Logger.error(message: "add run $e");
-      runBox.close();
+      runBox?.close();
       return Error(const DefaultError("Error when add run"));
     }
   }
@@ -57,14 +54,14 @@ class RunRepositoryImpl implements RunRepository {
     yield Loading();
     runBox = await Boxes.I.runBox;
     try {
-      final runs = runBox.values.map((e) => e.toRun()).toList();
+      final runs = runBox?.values.map((e) => e.toRun()).toList();
       yield Success(runs);
       Logger.success(message: "get all run");
-      runBox.close();
+      runBox?.close();
     } catch (e) {
       Logger.error(message: "get all run: $e");
       yield Error(const DefaultError("Error when get run"));
-      runBox.close();
+      runBox?.close();
     }
   }
 
@@ -84,31 +81,33 @@ class RunRepositoryImpl implements RunRepository {
   Future<Status<Run>> get(key) async {
     try {
       runBox = await Boxes.I.runBox;
-      final run = runBox.get(key);
+      final run = runBox?.get(key);
       if (run == null) {
         throw DefaultError("Not found run $key");
       }
-      runBox.close();
+      runBox?.close();
       return Future.value(Success(run.toRun()));
     } catch (e) {
       Logger.error(message: "get run: $e");
+      runBox?.close();
       if (e is Failure) {
-        runBox.close();
         return Future.value(Error(e));
       }
-      runBox.close();
+
       return Future.value(Error(const DefaultError("Error when get run")));
     }
   }
 
   List<Run> getRunsFromTimeInDay(int timeStartInMiliseconds) {
     try {
-      if (runBox.values.isEmpty) return List.empty();
-      return runBox.values
-          .skipWhile(
-              (value) => value.timeStartInMiliseconds < timeStartInMiliseconds)
-          .map((e) => e.toRun())
-          .toList();
+      if (runBox == null || runBox!.isEmpty) return List.empty();
+      List<Run> res = List.empty(growable: true);
+      for (RunModel runModel in runBox!.values) {
+        if (runModel.timeStartInMiliseconds >= timeStartInMiliseconds) {
+          res.add(runModel.toRun());
+        }
+      }
+      return res;
     } catch (e) {
       rethrow;
     }
@@ -116,12 +115,13 @@ class RunRepositoryImpl implements RunRepository {
 
   List<Run> getRunsFromTime(int timeStartInMiliseconds) {
     try {
-      final runsBox = runBox.values
-          .skipWhile(
-              (value) => value.timeStartInMiliseconds < timeStartInMiliseconds)
-          .map((e) => e.toRun())
-          .toList();
-      if (runsBox.isEmpty || runBox.length == 1) return runsBox;
+      final runsBox = runBox?.values
+              .skipWhile((value) =>
+                  value.timeStartInMiliseconds < timeStartInMiliseconds)
+              .map((e) => e.toRun())
+              .toList() ??
+          List.empty();
+      if (runsBox.isEmpty || runBox?.length == 1) return runsBox;
       Run initRun = Run(
           runId: "",
           key: 0,
@@ -144,7 +144,7 @@ class RunRepositoryImpl implements RunRepository {
 
   @override
   Stream<Status<List<Run?>>> getRunsThisDay() async* {
-    Logger.debug(message: "getRunsThisDay");
+    // Logger.debug(message: "getRunsThisDay");
     runBox = await Boxes.I.runBox;
     try {
       final dateTime = DateTime.now();
@@ -154,21 +154,22 @@ class RunRepositoryImpl implements RunRepository {
         dateTime.day,
       );
       final runsThisDay = getRunsFromTimeInDay(today.millisecondsSinceEpoch);
+      
       final List<Run?> result = List.generate(24, (index) => null);
-      for(Run run in runsThisDay){
-          result[run.timeStart.hour] = run;
+      for (Run run in runsThisDay) {
+        result[run.timeStart.hour] = run;
       }
       yield Success(result);
-      runBox.close();
+      runBox?.close();
     } catch (e) {
       Logger.error(message: "get run this day: $e");
       if (e is Failure) {
         yield Error(e);
-      }else{
+      } else {
         yield Error(const DefaultError("Error when get run this day"));
       }
 
-      runBox.close();
+      runBox?.close();
     }
   }
 
@@ -180,19 +181,19 @@ class RunRepositoryImpl implements RunRepository {
       final monday = dateTime.subtract(Duration(days: dateTime.weekday - 1));
       final runsThisWeek = getRunsFromTimeInDay(monday.millisecondsSinceEpoch);
       final List<Run?> result = List.generate(7, (index) => null);
-      for(Run run in runsThisWeek){
+      for (Run run in runsThisWeek) {
         result[run.timeStart.weekday - 1] = run;
       }
       yield Success(result);
-      runBox.close();
+      runBox?.close();
     } catch (e) {
       Logger.error(message: "get run this week: $e");
       if (e is Failure) {
         yield Error(e);
-      }else{
+      } else {
         yield Error(const DefaultError("Error when get run this week"));
       }
-      runBox.close();
+      runBox?.close();
     }
   }
 
@@ -206,19 +207,19 @@ class RunRepositoryImpl implements RunRepository {
       final runsThisMonth =
           getRunsFromTimeInDay(theFirstDayOfThisMonth.millisecondsSinceEpoch);
       final List<Run?> result = List.generate(31, (index) => null);
-      for(Run run in runsThisMonth){
+      for (Run run in runsThisMonth) {
         result[run.timeStart.day - 1] = run;
       }
       yield Success(result);
-      runBox.close();
+      runBox?.close();
     } catch (e) {
       Logger.error(message: "get run this month: $e");
       if (e is Failure) {
         yield Error(e);
-      }else{
+      } else {
         yield Error(const DefaultError("Error when get run this month"));
       }
-      runBox.close();
+      runBox?.close();
     }
   }
 }

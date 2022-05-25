@@ -6,4 +6,5 @@ abstract class PrefKeys {
   static const String timeStart = "time-start";
   static const String notifyBefore = "notify-before";
   static const String isFirstOpenApp = "is-first-open-app";
+  static const String canRun = "can-run";
 }

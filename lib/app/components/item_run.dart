@@ -1,6 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:jogingu_advanced/domain/utils/extentions.dart';
+import 'package:jogingu_advanced/domain/utils/extensions.dart';
 import 'package:jogingu_advanced/resources/app_assets.dart';
 import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:jogingu_advanced/resources/app_styles.dart';
@@ -12,12 +11,16 @@ class ItemRun extends StatelessWidget {
   final double height;
   final Run run;
   final Function(int id) onMenuClick;
-  const ItemRun(
-      {Key? key,
-      required this.height,
-      required this.run,
-      required this.onMenuClick})
-      : super(key: key);
+  final ImageProvider<Object>? avatar;
+  final String? username;
+  const ItemRun({
+    Key? key,
+    required this.height,
+    required this.run,
+    required this.onMenuClick,
+	this.avatar,
+	this.username,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -87,13 +90,6 @@ class ItemRun extends StatelessWidget {
                 },
                 fit: BoxFit.fill,
               ),
-              //   child: CachedNetworkImage(
-              //     imageUrl: run.image ??
-              //         "https://www.dungplus.com/wp-content/uploads/2019/12/girl-xinh-1-480x600.jpg",
-              //     progressIndicatorBuilder: (context, url, downloadProgress) =>
-              //         CircularProgressIndicator(value: downloadProgress.progress),
-
-              //   ),
             )
           ],
         ),
@@ -105,8 +101,8 @@ class ItemRun extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const CircleAvatar(
-          backgroundImage: AssetImage(AppAssets.avatar),
+        CircleAvatar(
+          backgroundImage: avatar ?? const AssetImage(AppAssets.avatar),
         ),
         const SizedBox(
           width: 10,
@@ -116,7 +112,7 @@ class ItemRun extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Sudo",
+                username ?? "Sudo",
                 style: AppStyles.h5.copyWith(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,

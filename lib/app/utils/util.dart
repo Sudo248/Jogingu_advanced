@@ -66,6 +66,13 @@ String formatTime(DateTime time) {
   return formatTime;
 }
 
+String simpleFormatTime(DateTime? time) {
+  if (time == null) {
+    return "";
+  }
+  return DateFormat.yMMMMd('en_US').format(time);
+}
+
 String formatTimeOfDay(dynamic timeOfDay) {
   if (timeOfDay is TimeOfDay) {
     final now = DateTime.now();
@@ -78,5 +85,5 @@ String formatTimeOfDay(dynamic timeOfDay) {
   if (timeOfDay is DateTime) {
     return DateFormat.jm().format(timeOfDay);
   }
-  return "ERROR";
+  return "";
 }

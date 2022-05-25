@@ -10,4 +10,10 @@ class AppPref {
   }
 
   Future<bool> get isFirstOpenApp => prefs.getBool(PrefKeys.isFirstOpenApp);
+
+  Future<bool> setCanRun(bool canRun) async {
+    return prefs.setBool(PrefKeys.canRun, canRun);
+  }
+
+  Future<bool> get canRun => prefs.getBool(PrefKeys.canRun);
 }

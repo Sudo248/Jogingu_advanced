@@ -10,12 +10,14 @@ class Boxes {
 
   Boxes._internal();
 
-  static Boxes? instance;
+  static Boxes? _instance;
 
-  static Boxes get I {
-    instance ??= Boxes._internal();
-    return instance!;
+  static Boxes get instance {
+    _instance ??= Boxes._internal();
+    return _instance!;
   }
+
+  static Boxes get I => instance;
 
   Future<Box<UserModel>> get userBox => Hive.openBox<UserModel>(user);
   Future<Box<RunModel>> get runBox => Hive.openBox<RunModel>(run);

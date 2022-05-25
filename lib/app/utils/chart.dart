@@ -38,7 +38,7 @@ class JoginguChart extends StatelessWidget {
           borderData: borderData,
           maxY: maxY,
         ),
-        swapAnimationDuration: const Duration(seconds: 1),
+        swapAnimationDuration: const Duration(milliseconds: 500),
         swapAnimationCurve: Curves.decelerate,
       ),
     );

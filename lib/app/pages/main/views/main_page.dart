@@ -1,32 +1,37 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:jogingu_advanced/app/base/page_base.dart';
+import 'package:flutter/services.dart';
+import 'package:jogingu_advanced/app/base/base_fragment_route.dart';
+import 'package:jogingu_advanced/app/base/base_page.dart';
 import 'package:jogingu_advanced/app/components/bottom_navigation_app_bar.dart';
 import 'package:jogingu_advanced/app/pages/main/bloc/main_bloc.dart';
 import 'package:jogingu_advanced/app/routes/app_routes.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:jogingu_advanced/app/utils/dialog.dart';
 
 import '../../../../resources/app_assets.dart';
 import '../../../../resources/app_colors.dart';
 import '../../../../resources/app_styles.dart';
 
-class MainPage extends PageBase<MainBloc> {
-  late Size size;
-  MainPage({Key? key}) : super(key: key);
+class MainPage extends BasePage<MainBloc> {
+  late final Size size;
+
+  MainPage({Key? key}) : super(key: key) {
+    size = bloc.globalData.size;
+
+  }
 
   @override
   Widget build(BuildContext context) {
-    size = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryColor,
-        title: StreamBuilder<Map<String, dynamic>>(
-          stream: bloc.currentFragmentStream,
+        title: StreamBuilder<BaseFragmentRoute>(
+          stream: bloc.fragmentStream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return Container();
+              return const SizedBox.shrink();
             }
-            String title = snapshot.data?["name"] ?? "Unknow";
+            String title = snapshot.data?.nameFragment ?? "Unknow";
             return Text(
               title,
               style: AppStyles.h4
@@ -45,8 +50,8 @@ class MainPage extends PageBase<MainBloc> {
           )
         ],
       ),
-      body: StreamBuilder<Map<String, dynamic>>(
-        stream: bloc.currentFragmentStream,
+      body: StreamBuilder<BaseFragmentRoute>(
+        stream: bloc.fragmentStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const SizedBox.shrink();
@@ -55,7 +60,7 @@ class MainPage extends PageBase<MainBloc> {
             key: GlobalKey(),
             child: Column(
               children: [
-                snapshot.data!["page"],
+                snapshot.data!.buildContent(context),
                 SizedBox(
                   height: size.width / 9.0,
                 )
@@ -85,8 +90,8 @@ class MainPage extends PageBase<MainBloc> {
         ],
         onTapItem: (index) => bloc.navigateToFragment(index),
         showUnisSelectedLabels: false,
-        backgroundColor: AppColors.primaryColor,
-        isSelectedItemColor: Colors.white,
+        backgroundColor: Colors.white,
+        isSelectedItemColor: AppColors.primaryColor,
         notchMargin: size.height / 120,
         height: size.height / 14,
       ),
@@ -100,7 +105,7 @@ class MainPage extends PageBase<MainBloc> {
                 color: Colors.white,
               ),
             ),
-            onPressed: () => bloc.navigateOffToPage(AppRoutes.run),
+            onPressed: () => onClickRun(context),
             child: const Text(
               "Run",
               style: AppStyles.h5,
@@ -110,5 +115,22 @@ class MainPage extends PageBase<MainBloc> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
+  }
+
+  void onClickRun(BuildContext context) async {
+    if (await bloc.canRun) {
+      bloc.navigateOffToPage(AppRoutes.run);
+    } else {
+      showJoginguAlertDialog(
+        context,
+        content: Text(
+          "You have to fill your profile before run.",
+          style: AppStyles.h5.copyWith(
+            color: Colors.black,
+          ),
+        ),
+        onClick: bloc.prepareToRun,
+      );
+    }
   }
 }

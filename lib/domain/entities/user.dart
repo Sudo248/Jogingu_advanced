@@ -5,6 +5,7 @@ import './gender.dart';
 
 class User extends Equatable {
   final String? userId;
+  final int key;
   final String? firstName;
   final String? lastName;
   final String? city;
@@ -12,13 +13,13 @@ class User extends Equatable {
   final String? primarySport;
   final Gender gender;
   final DateTime? birthday;
-  final int? age;
-  final int? height;
-  final int? weight;
-  final Image? avatar;
+  final double? height;
+  final double? weight;
+  final String? avatarUrl;
 
    const User(
       {this.userId,
+	  required this.key,
       this.firstName,
       this.lastName,
       this.city,
@@ -26,10 +27,9 @@ class User extends Equatable {
       this.primarySport,
       this.gender = Gender.Male,
       this.birthday,
-      this.age,
       this.height,
       this.weight,
-      this.avatar});
+      this.avatarUrl});
 
   @override
   List<Object?> get props => [
@@ -41,9 +41,8 @@ class User extends Equatable {
         primarySport,
         gender,
         birthday,
-        age,
         height,
         weight,
-        avatar,
+        avatarUrl,
       ];
 }

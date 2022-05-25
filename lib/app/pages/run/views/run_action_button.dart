@@ -5,7 +5,7 @@ import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:jogingu_advanced/resources/app_styles.dart';
 
 class RunActionButton extends StatefulWidget {
-  final Stream<double>? disctanceStream;
+  final Stream<double>? distanceStream;
   final Stream<RunState>? runStateStream;
   final VoidCallback? onFinishClick;
   final VoidCallback? onPauseOrResumeClick;
@@ -14,7 +14,7 @@ class RunActionButton extends StatefulWidget {
   const RunActionButton({
     Key? key,
     required this.runStateStream,
-    this.disctanceStream,
+    this.distanceStream,
     this.onFinishClick,
     this.onPauseOrResumeClick,
     this.onStartClick,
@@ -73,7 +73,7 @@ class _RunActionButtonState extends State<RunActionButton> {
                           child: Column(
                             children: [
                               StreamBuilder<double>(
-                                stream: widget.disctanceStream,
+                                stream: widget.distanceStream,
                                 builder: (context, snapshot) {
                                   if (!snapshot.hasData) {
                                     return const SizedBox.shrink();

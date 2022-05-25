@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_polyline_algorithm/google_polyline_algorithm.dart';
 import 'package:jogingu_advanced/app/base/bloc_base.dart';
 import 'package:jogingu_advanced/app/routes/app_routes.dart';
 import 'package:jogingu_advanced/app/utils/util.dart';
+import 'package:jogingu_advanced/data/extensions/lat_long.dart';
 import 'package:jogingu_advanced/data/services/location_service.dart';
 import 'package:jogingu_advanced/data/services/step_counter_service.dart';
 import 'package:jogingu_advanced/data/services/timer_service.dart';
@@ -15,9 +15,9 @@ import 'package:jogingu_advanced/domain/common/run_state.dart';
 import 'package:jogingu_advanced/domain/common/status.dart' as Status;
 import 'package:jogingu_advanced/domain/entities/run.dart';
 import 'package:jogingu_advanced/domain/repositories/run_repository.dart';
+import 'package:jogingu_advanced/domain/repositories/user_repository.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'dart:math';
 import '../../../../domain/common/logger.dart';
 
 class RunBloc extends BlocBase {
@@ -28,9 +28,8 @@ class RunBloc extends BlocBase {
   final LocationService locationService;
   final TimerService timerService;
   final StepCounterService stepCounterService;
-  final RunRepository repository;
-
-  final double R = 6371e3;
+  final RunRepository runRepo;
+  final UserRepository userRepo;
 
   BehaviorSubject<RunState> runState = BehaviorSubject.seeded(RunState.start);
   Stream<RunState> get runStateStream => runState.stream;
@@ -58,7 +57,7 @@ class RunBloc extends BlocBase {
   LatLng defaultLocation =
       const LatLng(Constants.haNoiLatitude, Constants.haNoiLongtitude);
 
-  StreamController<bool> onMapStyleLoaded = StreamController();
+  BehaviorSubject<bool> onMapStyleLoaded = BehaviorSubject();
 
   String urlMap = "";
 
@@ -66,7 +65,8 @@ class RunBloc extends BlocBase {
     required this.locationService,
     required this.timerService,
     required this.stepCounterService,
-    required this.repository,
+    required this.runRepo,
+    required this.userRepo,
   });
 
   @override
@@ -77,7 +77,7 @@ class RunBloc extends BlocBase {
   Future<bool> isLocationPermission() async {
     if (await locationService.checkAndRequestLocationService()) {
       if (await locationService.checkAndRequestPermissionForUpdateLocation()) {
-        subcriptionUpdateLocation();
+        subscriptionUpdateLocation();
         stepCounterService.subscribeStepCounterService();
         return Future.value(true);
       } else {
@@ -99,8 +99,8 @@ class RunBloc extends BlocBase {
     Logger.success(message: "draw Start Position");
   }
 
-  void subcriptionUpdateLocation() async {
-    Logger.debug(message: "subcriptionUpdateLocation");
+  void subscriptionUpdateLocation() async {
+    Logger.debug(message: "subscriptionUpdateLocation");
     locationService.subcriptionUpdateLocation();
     locationService.notificatrion();
 
@@ -117,23 +117,23 @@ class RunBloc extends BlocBase {
   Future<void> calculateDisctance() async {
     final len = listLocation.length;
     if (len > 2) {
-      distanceSink
-          .add(distance.value + disctanceBetween(listLocation[len - 2], listLocation[len - 1]));
+      // distanceBetween(listLocation[len - 2], listLocation[len - 1]).then((value) => distanceSink.add(distance.value +value));
     }
   }
 
-  double disctanceBetween(LatLng previous, LatLng next) {
-    final phi1 = previous.latitude * pi/180;
-    final phi2 = next.latitude * pi/180;
-    final alphaPhi = (next.latitude - previous.latitude) * pi/180;
-    final alphaGamma = (next.longitude - previous.longitude) * pi/180;
-    final sinAlphaPhi = sin(alphaPhi / 2);
-    final sinAlphaGamma = sin(alphaGamma / 2);
-    final a = sinAlphaPhi * sinAlphaPhi + cos(phi1) * cos(phi2) + sinAlphaGamma * sinAlphaGamma;
+  Future<double> distanceBetween(LatLng previous, LatLng next) async{
+    // final phi1 = previous.latitude * pi/180;
+    // final phi2 = next.latitude * pi/180;
+    // final alphaPhi = (next.latitude - previous.latitude) * pi/180;
+    // final alphaGamma = (next.longitude - previous.longitude) * pi/180;
+    // final sinAlphaPhi = sin(alphaPhi / 2);
+    // final sinAlphaGamma = sin(alphaGamma / 2);
+    // final a = sinAlphaPhi * sinAlphaPhi + cos(phi1) * cos(phi2) + sinAlphaGamma * sinAlphaGamma;
 
-    final c = 2 * atan2(sqrt(a), sqrt(1-a));
+    // final c = 2 * atan2(sqrt(a), sqrt(1-a));
 
-    return R * c / 1000;
+    // return R * c / 1000;
+    return previous.distance(next);
   }
 
   Future<void> calculateSpeed() async {}
@@ -195,37 +195,40 @@ class RunBloc extends BlocBase {
     }
   }
 
-  void navigateToMainPage() => navigator.navigateOffAll(AppRoutes.main);
+  void navigateToMainPage() => navigator.navigateOff(AppRoutes.main);
 
   Future<void> onSave() async {
     //save run here
+    final bmrStatus = userRepo.getBMR();
     final nameRun = getNameRunByTime();
-    final totalDisctance = distance.value;
+    final totalDisctance = double.parse(distance.value.toStringAsFixed(2));
     final totalTime = timerService.timer.value;
     final avgSpeed = totalDisctance / totalTime;
     final stepCount = stepCounterService.stepCounter.value;
     final placeName = getPlaceName(listLocation.last);
     final startTime = DateTime.now().subtract(Duration(seconds: totalTime));
+    final bmr = (await bmrStatus).data ?? 0;
+    final caloBunred = bmr * totalDisctance / (totalTime / 3600);
 
-    await repository.add(
+    await runRepo.add(
       Run(
         runId: "",
-		key: -1,
+        key: -1,
         name: await nameRun,
         distance: totalDisctance,
         avgSpeed: avgSpeed,
         timeRunning: totalTime,
-        caloBunred: 0,
+        caloBunred: caloBunred.toInt(),
         timeStart: startTime,
         stepCount: stepCount,
         location: await placeName,
-		image: urlMap,
+        image: urlMap,
       ),
     );
 
     Logger.success(message: """
 	nameRun: ${await nameRun},
-	locationName: ${await formatTime(startTime)}-${await placeName},
+	locationName: ${formatTime(startTime)}-${await placeName},
 	totalDisctance: $totalDisctance,
 	totalTime: $totalTime,
 	avgSpeed: $avgSpeed,
