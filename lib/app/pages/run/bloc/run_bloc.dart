@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_polyline_algorithm/google_polyline_algorithm.dart';
 import 'package:jogingu_advanced/app/base/bloc_base.dart';
@@ -21,6 +22,7 @@ import 'package:mapbox_gl/mapbox_gl.dart';
 import '../../../../domain/common/logger.dart';
 
 class RunBloc extends BlocBase {
+  GlobalKey mapKey = GlobalKey();
   late final MapboxMapController mapController;
   late final AnimationController runBottomBarController;
   late final Line line;
@@ -117,11 +119,12 @@ class RunBloc extends BlocBase {
   Future<void> calculateDisctance() async {
     final len = listLocation.length;
     if (len > 2) {
-      // distanceBetween(listLocation[len - 2], listLocation[len - 1]).then((value) => distanceSink.add(distance.value +value));
+      distanceBetween(listLocation[len - 2], listLocation[len - 1])
+          .then((value) => distanceSink.add(distance.value + value));
     }
   }
 
-  Future<double> distanceBetween(LatLng previous, LatLng next) async{
+  Future<double> distanceBetween(LatLng previous, LatLng next) async {
     // final phi1 = previous.latitude * pi/180;
     // final phi2 = next.latitude * pi/180;
     // final alphaPhi = (next.latitude - previous.latitude) * pi/180;
@@ -133,7 +136,8 @@ class RunBloc extends BlocBase {
     // final c = 2 * atan2(sqrt(a), sqrt(1-a));
 
     // return R * c / 1000;
-    return previous.distance(next);
+    return compute(previous.distance, next);
+    // return previous.distance(next);
   }
 
   Future<void> calculateSpeed() async {}
@@ -238,12 +242,61 @@ class RunBloc extends BlocBase {
     navigator.navigateOffAll(AppRoutes.main);
   }
 
+  Future<void> getUrlMapIsolate(Size size) async {
+    canSaveRunSink.add(Status.Loading());
+    final url = await compute(
+        staticGetUrlMap, {'size': size, 'listLocation': listLocation});
+    if (url == "error") {
+      Logger.error(message: "Invalid url mapbox");
+      canSaveRunSink.add(Status.Error(const DefaultError(
+          "Not moving yet?\nJogingu needs along run to upload. Please continute or start over.")));
+    } else {
+      urlMap = url;
+      canSaveRunSink.add(Status.Success(urlMap));
+    }
+  }
+
+  static FutureOr<String> staticGetUrlMap(Map<String, Object> arguments) async {
+    final size = arguments['size'] as Size;
+    final listLocation = arguments['listLocation'] as List<LatLng>;
+    double minLat = double.infinity,
+        minLng = double.infinity,
+        maxLng = -double.infinity,
+        maxLat = -double.infinity;
+
+    final polylines = encodePolyline(listLocation.map(
+      (e) {
+        double lat = e.latitude;
+        double lng = e.longitude;
+        if (maxLat < lat) maxLat = lat;
+        if (minLat > lat) minLat = lat;
+        if (maxLng < lng) maxLng = lng;
+        if (minLng > lng) minLng = lng;
+        return [e.latitude, e.longitude];
+      },
+    ).toList());
+    if (minLat == maxLat || minLng == maxLng || listLocation.length < 5) {
+      return "error";
+    }
+    final uri = Uri.encodeComponent(polylines);
+    final url = getUrlStaticMapbox(
+      minLat: minLat,
+      minLng: minLng,
+      maxLat: maxLat,
+      maxLng: maxLng,
+      size: size,
+      path: uri,
+    );
+    return url;
+  }
+
   Future<String> getUrlMap(Size size) async {
     canSaveRunSink.add(Status.Loading());
     double minLat = double.infinity,
         minLng = double.infinity,
         maxLng = -double.infinity,
         maxLat = -double.infinity;
+
     final polylines = encodePolyline(listLocation.map(
       (e) {
         double lat = e.latitude;

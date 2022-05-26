@@ -87,3 +87,12 @@ String formatTimeOfDay(dynamic timeOfDay) {
   }
   return "";
 }
+
+// add header is needed
+ImageProvider<Object> getImageProvider(String path) {
+  if (path.startsWith('http')) {
+    return NetworkImage(path);
+  } else {
+    return AssetImage(path);
+  }
+}
