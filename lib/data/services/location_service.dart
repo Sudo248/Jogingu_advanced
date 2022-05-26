@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
@@ -12,33 +13,51 @@ class LocationService {
 
   final channelNotification = "NOTIFICSTION_CHANNEL";
   final title = "Jogingu";
-  final description = "description for notification";
+  final description = "Run service is running in foreground";
 
   void notificatrion() async {
     final data = await _location.changeNotificationOptions(
-        channelName: channelNotification,
-        title: title,
-        iconName: "iconName",
-        subtitle: "subtitle",
-        description: description,
-        color: Colors.red);
+      channelName: channelNotification,
+      title: title,
+      iconName: "launcher_icon",
+      subtitle: "subtitle",
+      description: description,
+      color: AppColors.primaryColor,
+    );
+	
   }
 
   void subcriptionUpdateLocation() {
     _location.enableBackgroundMode(enable: true);
   }
 
-  void pauseUpdateLocation() {
+  Future<void> pauseUpdateLocation() async{
+	  final data = await _location.changeNotificationOptions(
+      channelName: channelNotification,
+      title: title,
+      iconName: "launcher_icon.png",
+      subtitle: "subtitle",
+      description: description,
+      color: Colors.red,
+    );
     streamSubscription?.pause();
   }
 
-  void resumeUpdateLocation() {
+  Future<void> resumeUpdateLocation() async{
     if (streamSubscription?.isPaused ?? false) {
       streamSubscription?.resume();
     }
+	final data = await _location.changeNotificationOptions(
+      channelName: channelNotification,
+      title: title,
+      iconName: "launcher_icon.png",
+      subtitle: "subtitle",
+      description: description,
+      color: AppColors.primaryColor,
+    );
   }
 
-  Future<void> unSubcriptionUpdateLocation() async{
+  Future<void> unSubcriptionUpdateLocation() async {
     await streamSubscription?.cancel();
     _location.enableBackgroundMode(enable: false);
   }
@@ -79,7 +98,7 @@ class LocationService {
   void onChangedLocation(void Function(LocationData location) onData) {
     streamSubscription = _location.onLocationChanged.listen((event) {
       onData(event);
-    //   _location.changeNotificationOptions();
+      //   _location.changeNotificationOptions();
     });
   }
 

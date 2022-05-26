@@ -44,15 +44,17 @@ class HomeFragment extends BaseFragment<HomeBloc> {
                   ),
                 );
               }
+			  final itemExtent = size.height * 0.5;
               return ListView.builder(
                 itemCount: data.length,
                 shrinkWrap: true,
                 primary: true,
+				itemExtent: itemExtent,
                 physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) => ItemRun(
                   avatar: bloc.avatar,
                   username: bloc.username,
-                  height: size.height * 0.5,
+                  height: itemExtent,
                   run: data[index],
                   onMenuClick: (key) {
                     showBottomSheet(context, key);

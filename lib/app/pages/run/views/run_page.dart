@@ -15,8 +15,12 @@ import 'package:mapbox_gl/mapbox_gl.dart';
 class RunPage extends BasePage<RunBloc> {
   late final Size size;
 
-  RunPage({Key? key}) : super(key: key) {
+  RunPage({Key? key}) : super(key: key);
+
+  @override
+  void onInit() {
     size = bloc.globalData.size;
+    super.onInit();
   }
 
   @override
@@ -41,39 +45,12 @@ class RunPage extends BasePage<RunBloc> {
                       child: CircularProgressIndicator(),
                     );
                   }
-                  // return Container(color: Colors.blue, width: double.infinity, height: double.infinity,);
-                  return MapboxMap(
-                      accessToken: Constants.accessToken,
-                      styleString: Constants.mapStyle,
-                      initialCameraPosition: CameraPosition(
-                        target: bloc.defaultLocation,
-                        zoom: Constants.defaultZoom,
-                      ),
-                      minMaxZoomPreference: const MinMaxZoomPreference(
-                        Constants.minZoom,
-                        Constants.maxZoom,
-                      ),
-                      onMapCreated: (controller) async {
-                        bloc.mapController = controller;
-                        Logger.success(message: "on Map Created");
-                      },
-                      onStyleLoadedCallback: () {
-                        bloc.onMapStyleLoadedCallback();
-                        Logger.success(message: "on Style Loaded Callback");
-                      },
-                      myLocationTrackingMode: MyLocationTrackingMode.Tracking,
-                      trackCameraPosition: true,
-                      attributionButtonPosition:
-                          AttributionButtonPosition.BottomRight,
-                      compassViewPosition: CompassViewPosition.TopLeft,
-                      onUserLocationUpdated: (location) {
-                        //   Logger.debug(
-                        //       key: "current position from mapbox",
-                        //       message: "${location.position}");
-                        //   bloc.onLocationChanged(location);
-                      },
-                      myLocationEnabled: true //snapshot.data!,
-                      );
+                  //   return Container(color: Colors.blue, width: double.infinity, height: double.infinity,);
+                  return WidgetMapBox(
+                    defaultLocation: bloc.defaultLocation,
+                    onMapCreated: (controler) => bloc.mapController = controler,
+                    onMapStyleLoadedCallback: bloc.onMapStyleLoadedCallback,
+                  );
                 },
               ),
               StreamBuilder<bool>(
@@ -128,11 +105,12 @@ class RunPage extends BasePage<RunBloc> {
     } else {
       bloc.navigateToMainPage();
     }
+
     return Future.value(false);
   }
 
   Future<void> _showDialog(BuildContext context) async {
-    bloc.getUrlMap(Size(size.width, size.height * 0.3));
+    bloc.getUrlMapIsolate(Size(size.width, size.height * 0.3));
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -167,16 +145,16 @@ class RunPage extends BasePage<RunBloc> {
                 width: size.width * 0.8,
                 child: Image.network(
                   url,
-                  //   loadingBuilder: (BuildContext context, Widget child,
-                  //       ImageChunkEvent? loadingProgress) {
-                  //     if (loadingProgress == null) return child;
-                  //     return const Center(
-                  //       child: SizedBox.square(
-                  //         dimension: 50,
-                  //         child: CircularProgressIndicator(),
-                  //       ),
-                  //     );
-                  //   },
+                    loadingBuilder: (BuildContext context, Widget child,
+                        ImageChunkEvent? loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(
+                        child: SizedBox.square(
+                          dimension: 50,
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
                   frameBuilder:
                       (context, child, frame, wasSynchronouslyLoaded) {
                     return child;
@@ -256,5 +234,52 @@ class RunPage extends BasePage<RunBloc> {
         },
       ),
     );
+  }
+}
+
+class WidgetMapBox extends StatelessWidget {
+  final LatLng defaultLocation;
+  final Function(MapboxMapController controller) onMapCreated;
+  final VoidCallback onMapStyleLoadedCallback;
+  const WidgetMapBox(
+      {Key? key,
+      required this.defaultLocation,
+      required this.onMapCreated,
+      required this.onMapStyleLoadedCallback})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MapboxMap(
+        accessToken: Constants.accessToken,
+        styleString: Constants.mapStyle,
+        initialCameraPosition: CameraPosition(
+          target: defaultLocation,
+          zoom: Constants.defaultZoom,
+        ),
+        minMaxZoomPreference: const MinMaxZoomPreference(
+          Constants.minZoom,
+          Constants.maxZoom,
+        ),
+        onMapCreated: (controller) async {
+          onMapCreated(controller);
+          Logger.success(message: "on Map Created");
+        },
+        onStyleLoadedCallback: () {
+          onMapStyleLoadedCallback();
+          Logger.success(message: "on Style Loaded Callback");
+        },
+        myLocationTrackingMode: MyLocationTrackingMode.Tracking,
+        trackCameraPosition: true,
+        attributionButtonPosition: AttributionButtonPosition.BottomRight,
+        compassViewPosition: CompassViewPosition.TopLeft,
+        onUserLocationUpdated: (location) {
+          // Logger.debug(
+          //     key: "current position from mapbox",
+          //     message: "${location.position}");
+          // bloc.onLocationChanged(location);
+        },
+        myLocationEnabled: true //snapshot.data!,
+        );
   }
 }

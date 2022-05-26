@@ -83,7 +83,7 @@ class MainBloc extends BlocBase {
   }
 
   Future<void> navigateOffToPage(String route, {Object? arguments}) async {
-    navigator.navigateOff(route, arguments: arguments);
+    navigator.navigateOffAll(route, arguments: arguments);
   }
 
   Future<void> navigateToFragment(int index) async {
