@@ -6,6 +6,8 @@ Using mapbox and text to speech library.
 
 ## Pages
 
+<img src="./description/images/splash.png" width="128"/>
+
 ![Splash page](./description/images/splash.png)
 
 ![Home page](./description/images/home.png)
