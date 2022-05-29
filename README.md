@@ -6,22 +6,19 @@ Using mapbox and text to speech library.
 
 ## Pages
 
-<img src="./description/images/splash.png" width="128"/>
+<img src="./description/images/splash.png" width="256"/> 
 
-![Splash page](./description/images/splash.png)
+<img src="./description/images/home.png" width="256"/> <img src="./description/images/delete_run.png" width="256"/> <img src="./description/images/confirm_delete.png" width="256"/>
 
-![Home page](./description/images/home.png)
+<img src="./description/images/target.png" width="256"/> <img src="./description/images/edit_target1.png" width="256"/> <img src="./description/images/edit_target2.png" width="256"/>
 
-![Target page](./description/images/target.png)
+<img src="./description/images/statistic.png" width="256"/>
 
-![Statistic page](./description/images/home.png)
+<img src="./description/images/profile.png" width="256"/> <img src="./description/images/profile1.png" width="256"/>
 
-![Profile page](./description/images/profile.png)
+<img src="./description/images/run.png" width="256"/> <img src="./description/images/running.png" width="256"/> <img src="./description/images/finnish _run.png" width="256"/>
 
-![Run page](./description/images/run.png)
+<img src="./description/images/about.png" width="256"/>
 
-![Running page](./description/images/running.png)
-
-![Finish run page](./description/images/finish_run.png)
 
 
