@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_polyline_algorithm/google_polyline_algorithm.dart';
 import 'package:jogingu_advanced/app/base/bloc_base.dart';
+import 'package:jogingu_advanced/app/base/di.dart';
 import 'package:jogingu_advanced/app/routes/app_routes.dart';
+import 'package:jogingu_advanced/app/service/text_to_speech_service.dart';
 import 'package:jogingu_advanced/app/utils/util.dart';
 import 'package:jogingu_advanced/data/extensions/lat_long.dart';
 import 'package:jogingu_advanced/data/services/location_service.dart';
@@ -17,6 +20,7 @@ import 'package:jogingu_advanced/domain/common/status.dart' as Status;
 import 'package:jogingu_advanced/domain/entities/run.dart';
 import 'package:jogingu_advanced/domain/repositories/run_repository.dart';
 import 'package:jogingu_advanced/domain/repositories/user_repository.dart';
+import 'package:jogingu_advanced/resources/app_strings.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import '../../../../domain/common/logger.dart';
@@ -63,6 +67,12 @@ class RunBloc extends BlocBase {
 
   String urlMap = "";
 
+  bool locationPermission = false;
+
+  final TextToSpeechService tts = Di.get<TextToSpeechService>();
+
+  bool tooFast = false;
+
   RunBloc({
     required this.locationService,
     required this.timerService,
@@ -79,8 +89,7 @@ class RunBloc extends BlocBase {
   Future<bool> isLocationPermission() async {
     if (await locationService.checkAndRequestLocationService()) {
       if (await locationService.checkAndRequestPermissionForUpdateLocation()) {
-        subscriptionUpdateLocation();
-        stepCounterService.subscribeStepCounterService();
+        locationPermission = true;
         return Future.value(true);
       } else {
         /// TODO: show dialog required permission for position.
@@ -106,13 +115,20 @@ class RunBloc extends BlocBase {
     locationService.subcriptionUpdateLocation();
     locationService.notificatrion();
 
-    locationService.onChangedLocation((location) {
+    locationService.onChangedLocation((location) async {
       listLocation.add(LatLng(location.latitude!, location.longitude!));
       if (runState.value == RunState.running) {
         updateLine();
         calculateDisctance();
       }
-      speedSink.add(location.speed ?? 0.0);
+      final speedOffset = (location.speed ?? 0.0) - 5.0;
+      speedSink.add(speedOffset > 0.0 ? speedOffset : 0.0);
+      if (!tooFast && speedOffset > 4.0) {
+        tooFast = true;
+        tts.speak(AppStrings.moveFast);
+        // after 10 second if too fast repeat
+        Timer(const Duration(minutes: 1), () => tooFast = false);
+      }
     });
   }
 
@@ -125,19 +141,7 @@ class RunBloc extends BlocBase {
   }
 
   Future<double> distanceBetween(LatLng previous, LatLng next) async {
-    // final phi1 = previous.latitude * pi/180;
-    // final phi2 = next.latitude * pi/180;
-    // final alphaPhi = (next.latitude - previous.latitude) * pi/180;
-    // final alphaGamma = (next.longitude - previous.longitude) * pi/180;
-    // final sinAlphaPhi = sin(alphaPhi / 2);
-    // final sinAlphaGamma = sin(alphaGamma / 2);
-    // final a = sinAlphaPhi * sinAlphaPhi + cos(phi1) * cos(phi2) + sinAlphaGamma * sinAlphaGamma;
-
-    // final c = 2 * atan2(sqrt(a), sqrt(1-a));
-
-    // return R * c / 1000;
     return compute(previous.distance, next);
-    // return previous.distance(next);
   }
 
   Future<void> calculateSpeed() async {}
@@ -169,87 +173,104 @@ class RunBloc extends BlocBase {
   }
 
   void onStartClick() async {
-    line = await mapController.addLine(
-      const LineOptions(
-        geometry: [],
-        lineColor: Constants.lineColor,
-        lineWidth: Constants.lineWidth,
-        draggable: false,
-      ),
-    );
-    drawStartPosition();
-    runStateSink.add(RunState.running);
-    runBottomBarController.forward();
-    listLocation.clear();
-    timerService.start();
-    stepCounterService.start();
+    if (locationPermission) {
+      subscriptionUpdateLocation();
+      stepCounterService.subscribeStepCounterService();
+      line = await mapController.addLine(
+        const LineOptions(
+          geometry: [],
+          lineColor: Constants.lineColor,
+          lineWidth: Constants.lineWidth,
+          draggable: false,
+        ),
+      );
+      drawStartPosition();
+      runStateSink.add(RunState.running);
+      runBottomBarController.forward();
+      listLocation.clear();
+      timerService.start();
+      stepCounterService.start();
+    }
   }
 
   void onPauseOrResumeClick() async {
     if (runState.value == RunState.running) {
       runStateSink.add(RunState.pause);
-      locationService.pauseUpdateLocation();
+      //   locationService.pauseUpdateLocation();
       timerService.pause();
       stepCounterService.pause();
     } else {
       runStateSink.add(RunState.running);
-      locationService.resumeUpdateLocation();
+      //   locationService.resumeUpdateLocation();
       timerService.resume();
       stepCounterService.resume();
     }
   }
 
-  void navigateToMainPage() => navigator.navigateOff(AppRoutes.main);
+  void navigateToMainPage() => navigator.navigateOffAll(AppRoutes.main);
 
   Future<void> onSave() async {
-    //save run here
-    final bmrStatus = userRepo.getBMR();
-    final nameRun = getNameRunByTime();
-    final totalDisctance = double.parse(distance.value.toStringAsFixed(2));
-    final totalTime = timerService.timer.value;
-    final avgSpeed = totalDisctance / totalTime;
-    final stepCount = stepCounterService.stepCounter.value;
-    final placeName = getPlaceName(listLocation.last);
-    final startTime = DateTime.now().subtract(Duration(seconds: totalTime));
-    final bmr = (await bmrStatus).data ?? 0;
-    final caloBunred = bmr * totalDisctance / (totalTime / 3600);
+    if (canSaveRun.value is Status.Success) {
+      //save run here
+      final bmrStatus = userRepo.getBMR();
+      final nameRun = getNameRunByTime();
+      final totalDisctance = double.parse(distance.value.toStringAsFixed(2));
+      final totalTime = timerService.timer.value;
+      final avgSpeed = (totalDisctance / totalTime) * 3.6;
+      final stepCount = stepCounterService.stepCounter.value;
+      final placeName = getPlaceName(listLocation.last);
+      final startTime = DateTime.now().subtract(Duration(seconds: totalTime));
+      final bmr = (await bmrStatus).data ?? 0;
+      final caloBunred = bmr * avgSpeed;
 
-    await runRepo.add(
-      Run(
-        runId: "",
-        key: -1,
-        name: await nameRun,
-        distance: totalDisctance,
-        avgSpeed: avgSpeed,
-        timeRunning: totalTime,
-        caloBunred: caloBunred.toInt(),
-        timeStart: startTime,
-        stepCount: stepCount,
-        location: await placeName,
-        image: urlMap,
-      ),
-    );
+      await runRepo.add(
+        Run(
+          runId: "",
+          key: -1,
+          name: await nameRun,
+          distance: totalDisctance,
+          avgSpeed: avgSpeed,
+          timeRunning: totalTime,
+          caloBunred: caloBunred.toInt(),
+          timeStart: startTime,
+          stepCount: stepCount,
+          location: await placeName,
+          image: urlMap,
+        ),
+      );
 
-    Logger.success(message: """
+      Logger.success(
+        message: """
 	nameRun: ${await nameRun},
 	locationName: ${formatTime(startTime)}-${await placeName},
 	totalDisctance: $totalDisctance,
 	totalTime: $totalTime,
 	avgSpeed: $avgSpeed,
 	url: $urlMap
-""");
+""",
+      );
 
-    navigator.navigateOffAll(AppRoutes.main);
+      navigateToMainPage();
+    }
   }
 
   Future<void> getUrlMapIsolate(Size size) async {
     canSaveRunSink.add(Status.Loading());
     final url = await compute(
-        staticGetUrlMap, {'size': size, 'listLocation': listLocation});
+      staticGetUrlMap,
+      {
+        'size': size,
+        'listLocation': listLocation,
+      },
+    );
     if (url == "error") {
       Logger.error(message: "Invalid url mapbox");
-      canSaveRunSink.add(Status.Error(const DefaultError(
-          "Not moving yet?\nJogingu needs along run to upload. Please continute or start over.")));
+      canSaveRunSink.add(
+        Status.Error(
+          const DefaultError(
+              "Not moving yet?\nJogingu needs along run to upload.\nPlease continute or start over."),
+        ),
+      );
     } else {
       urlMap = url;
       canSaveRunSink.add(Status.Success(urlMap));
@@ -297,17 +318,19 @@ class RunBloc extends BlocBase {
         maxLng = -double.infinity,
         maxLat = -double.infinity;
 
-    final polylines = encodePolyline(listLocation.map(
-      (e) {
-        double lat = e.latitude;
-        double lng = e.longitude;
-        if (maxLat < lat) maxLat = lat;
-        if (minLat > lat) minLat = lat;
-        if (maxLng < lng) maxLng = lng;
-        if (minLng > lng) minLng = lng;
-        return [e.latitude, e.longitude];
-      },
-    ).toList());
+    final polylines = encodePolyline(
+      listLocation.map(
+        (e) {
+          double lat = e.latitude;
+          double lng = e.longitude;
+          if (maxLat < lat) maxLat = lat;
+          if (minLat > lat) minLat = lat;
+          if (maxLng < lng) maxLng = lng;
+          if (minLng > lng) minLng = lng;
+          return [e.latitude, e.longitude];
+        },
+      ).toList(),
+    );
     if (minLat == maxLat || minLng == maxLng || listLocation.length < 5) {
       Logger.error(message: "Invalid url mapbox");
       canSaveRunSink.add(Status.Error(const DefaultError(
@@ -323,7 +346,6 @@ class RunBloc extends BlocBase {
       size: size,
       path: uri,
     );
-    Logger.success(message: "link: " + url);
     urlMap = url;
     canSaveRunSink.add(Status.Success(urlMap));
     return url;

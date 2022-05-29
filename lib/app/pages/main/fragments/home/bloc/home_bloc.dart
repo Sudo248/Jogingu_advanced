@@ -2,16 +2,20 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:jogingu_advanced/app/base/bloc_base.dart';
+import 'package:jogingu_advanced/app/base/di.dart';
+import 'package:jogingu_advanced/data/shared_preference/target_pref.dart';
 import 'package:jogingu_advanced/domain/common/status.dart';
 import 'package:jogingu_advanced/domain/repositories/run_repository.dart';
 import 'package:jogingu_advanced/domain/repositories/user_repository.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../../../../domain/entities/run.dart';
+import '../../../../../../resources/app_assets.dart';
 
 class HomeBloc extends BlocBase {
   final RunRepository runRepo;
   final UserRepository userRepo;
+  final TargetPref targetPref = Di.get<TargetPref>();
 
   HomeBloc({
     required this.runRepo,
@@ -48,12 +52,15 @@ class HomeBloc extends BlocBase {
   void onInit() async {
     // await runRepo.onInit();
     // mokeData();
-    print("onInit HomeBloc getName");
     final getName = await userRepo.getName();
 
     username = getName.data;
     final getAvatarStatus = await userRepo.getAvatarUrl();
-	avatar = getAvatarStatus.data != null ? FileImage(File(getAvatarStatus.data!)) : null;
+    if (getAvatarStatus.data != null) {
+      avatar = FileImage(File(getAvatarStatus.data!));
+    } else {
+      avatar = const AssetImage(AppAssets.avatar);
+    }
     getAll();
   }
 

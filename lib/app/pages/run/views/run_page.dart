@@ -82,9 +82,7 @@ class RunPage extends BasePage<RunBloc> {
                   runStateStream: bloc.runStateStream,
                   distanceStream: bloc.distanceStream,
                   onStartClick: bloc.onStartClick,
-                  onFinishClick: () {
-                    _showDialog(context);
-                  },
+                  onFinishClick: () => _showDialog(context),
                   onPauseOrResumeClick: bloc.onPauseOrResumeClick,
                 ),
                 duration: const Duration(milliseconds: 500),
@@ -114,124 +112,95 @@ class RunPage extends BasePage<RunBloc> {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => StreamBuilder<Status<String>>(
-        stream: bloc.canSaveRunStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const SizedBox.shrink();
-          }
-          return snapshot.data!.when<Widget>(
-            onIdle: () => const SizedBox.shrink(),
-            onLoading: () => AlertDialog(
-              content: SizedBox.square(
-                dimension: size.width * 0.8,
-                child: const SizedBox.square(
-                  dimension: 50,
-                  child: CircularProgressIndicator(),
-                ),
-              ),
+      builder: (_) => AlertDialog(
+        title: Center(
+          child: FittedBox(
+			child: Text(
+			  "Do you want to save this activity?",
+			  style: AppStyles.h5.copyWith(
+				color: Colors.black,
+				fontWeight: FontWeight.bold,
+			  ),
+			  maxLines: 2,
+			),
+		  ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25.0),
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actions: <Widget>[
+          TextButton(
+            onPressed: bloc.navigator.back,
+            child: const Text(
+              "Continute",
             ),
-            onSuccess: (url) => AlertDialog(
-              title: const FittedBox(
-                child: Text(
-                  'Do you want to save this activity?',
+          ),
+          TextButton(
+            child: const Text('Discard'),
+            onPressed: bloc.navigateToMainPage,
+          ),
+          TextButton(
+            onPressed: bloc.onSave,
+            child: const Text("Save"),
+          ),
+        ],
+		contentPadding: const EdgeInsets.all(0.0),
+        content: SizedBox(
+          width: size.width * 0.8,
+          height: size.height * 0.35,
+          child: StreamBuilder<Status<String>>(
+            stream: bloc.canSaveRunStream,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const SizedBox.shrink();
+              }
+              return snapshot.data!.when<Widget>(
+                onIdle: () => const SizedBox.shrink(),
+                onLoading: () => const Center(
+                  child: SizedBox.square(
+                    dimension: 50,
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25.0),
-              ),
-              actionsAlignment: MainAxisAlignment.spaceEvenly,
-              content: SizedBox(
-                width: size.width * 0.8,
-                child: Image.network(
+                onSuccess: (url) => Image.network(
                   url,
-                    loadingBuilder: (BuildContext context, Widget child,
-                        ImageChunkEvent? loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: SizedBox.square(
-                          dimension: 50,
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    },
+                  loadingBuilder: (BuildContext context, Widget child,
+                      ImageChunkEvent? loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(
+                      child: SizedBox.square(
+                        dimension: 50,
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  },
                   frameBuilder:
                       (context, child, frame, wasSynchronouslyLoaded) {
                     return child;
                   },
-                  errorBuilder: (context, object, _) => Text(
-                    "No internet access",
+                  errorBuilder: (context, object, _) => Center(
+                    child: Text(
+                      "No internet access",
+                      style: AppStyles.h5.copyWith(
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ),
+                onError: (error) => Center(
+                  child: Text(
+                    error.message,
+                    maxLines: 3,
                     style: AppStyles.h5.copyWith(
                       color: Colors.red,
                     ),
                   ),
                 ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    bloc.navigator.back();
-                  },
-                  child: const Text(
-                    "Continute",
-                  ),
-                ),
-                TextButton(
-                  child: const Text('Discard'),
-                  onPressed: () {
-                    bloc.navigateToMainPage();
-                  },
-                ),
-                TextButton(
-                  onPressed: () {
-                    bloc.onSave();
-                  },
-                  child: const Text("Save"),
-                )
-              ],
-            ),
-            onError: (error) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25.0),
-              ),
-              title: Center(
-                child: Text(
-                  "Error",
-                  style: AppStyles.h4.copyWith(
-                    color: Colors.red,
-                  ),
-                ),
-              ),
-              content: SizedBox(
-                width: size.width * 0.8,
-                child: Text(
-                  error.message,
-                  maxLines: 3,
-                  style: AppStyles.h5.copyWith(
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              actionsAlignment: MainAxisAlignment.spaceEvenly,
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    bloc.navigator.back();
-                  },
-                  child: const Text(
-                    "Continute",
-                  ),
-                ),
-                TextButton(
-                  child: const Text('Discard'),
-                  onPressed: () {
-                    bloc.navigateToMainPage();
-                  },
-                ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -251,35 +220,32 @@ class WidgetMapBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MapboxMap(
-        accessToken: Constants.accessToken,
-        styleString: Constants.mapStyle,
-        initialCameraPosition: CameraPosition(
-          target: defaultLocation,
-          zoom: Constants.defaultZoom,
-        ),
-        minMaxZoomPreference: const MinMaxZoomPreference(
-          Constants.minZoom,
-          Constants.maxZoom,
-        ),
-        onMapCreated: (controller) async {
-          onMapCreated(controller);
-          Logger.success(message: "on Map Created");
-        },
-        onStyleLoadedCallback: () {
-          onMapStyleLoadedCallback();
-          Logger.success(message: "on Style Loaded Callback");
-        },
-        myLocationTrackingMode: MyLocationTrackingMode.Tracking,
-        trackCameraPosition: true,
-        attributionButtonPosition: AttributionButtonPosition.BottomRight,
-        compassViewPosition: CompassViewPosition.TopLeft,
-        onUserLocationUpdated: (location) {
-          // Logger.debug(
-          //     key: "current position from mapbox",
-          //     message: "${location.position}");
-          // bloc.onLocationChanged(location);
-        },
-        myLocationEnabled: true //snapshot.data!,
-        );
+      accessToken: Constants.accessToken,
+      styleString: Constants.mapStyle,
+      initialCameraPosition: CameraPosition(
+        target: defaultLocation,
+        zoom: Constants.defaultZoom,
+      ),
+      minMaxZoomPreference: const MinMaxZoomPreference(
+        Constants.minZoom,
+        Constants.maxZoom,
+      ),
+      onMapCreated: (controller) async {
+        onMapCreated(controller);
+        Logger.success(message: "on Map Created");
+      },
+      onStyleLoadedCallback: () {
+        onMapStyleLoadedCallback();
+        Logger.success(message: "on Style Loaded Callback");
+      },
+      myLocationTrackingMode: MyLocationTrackingMode.Tracking,
+      trackCameraPosition: true,
+      attributionButtonPosition: AttributionButtonPosition.BottomRight,
+      compassViewPosition: CompassViewPosition.TopLeft,
+      onUserLocationUpdated: (location) {
+        // bloc.onLocationChanged(location);
+      },
+      myLocationEnabled: true, //snapshot.data!,
+    );
   }
 }

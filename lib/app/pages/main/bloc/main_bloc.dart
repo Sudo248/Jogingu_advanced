@@ -91,6 +91,7 @@ class MainBloc extends BlocBase {
       final isSaved = await navigateToPage(AppRoutes.profile);
       if (isSaved) {
         await pref.setCanRun(true);
+		// 
       }
     } else {
       fragmentSink.add(onGenerateRoute(index));

@@ -11,18 +11,17 @@ class LocationService {
 
   StreamSubscription? streamSubscription;
 
-  final channelNotification = "NOTIFICSTION_CHANNEL";
+  final channelNotification = "NOTIFICATION_CHANNEL";
   final title = "Jogingu";
-  final description = "Run service is running in foreground";
+  final description = "run service";
 
   void notificatrion() async {
     final data = await _location.changeNotificationOptions(
       channelName: channelNotification,
       title: title,
       iconName: "launcher_icon",
-      subtitle: "subtitle",
+      subtitle: "running",
       description: description,
-      color: AppColors.primaryColor,
     );
 	
   }
@@ -35,10 +34,9 @@ class LocationService {
 	  final data = await _location.changeNotificationOptions(
       channelName: channelNotification,
       title: title,
-      iconName: "launcher_icon.png",
-      subtitle: "subtitle",
+      iconName: "launcher_icon",
+      subtitle: "pause",
       description: description,
-      color: Colors.red,
     );
     streamSubscription?.pause();
   }
@@ -50,10 +48,9 @@ class LocationService {
 	final data = await _location.changeNotificationOptions(
       channelName: channelNotification,
       title: title,
-      iconName: "launcher_icon.png",
-      subtitle: "subtitle",
+      iconName: "launcher_icon",
+      subtitle: "running",
       description: description,
-      color: AppColors.primaryColor,
     );
   }
 

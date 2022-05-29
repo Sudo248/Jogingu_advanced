@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:jogingu_advanced/resources/app_styles.dart';
@@ -16,6 +15,7 @@ class BottomNavigationAppBar extends StatefulWidget {
   final NotchedShape? shape;
   final double notchMargin;
   final double? height;
+  final double? elevation;
 
   int currentIndex = 0;
 
@@ -31,6 +31,7 @@ class BottomNavigationAppBar extends StatefulWidget {
       this.unisSelectedFontSize = 14.0,
       this.shape,
       this.notchMargin = 4,
+	  this.elevation,
       this.height,
       this.iconSize})
       : super(key: key);
@@ -54,6 +55,7 @@ class _BottomNavigationAppBarState extends State<BottomNavigationAppBar> {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       notchMargin: widget.notchMargin,
+	  elevation: widget.elevation,
       color: widget.backgroundColor ?? Colors.white,
       child: SizedBox(
         height: widget.height,

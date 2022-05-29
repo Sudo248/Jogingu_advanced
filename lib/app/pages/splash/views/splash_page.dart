@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:jogingu_advanced/app/pages/splash/bloc/splash_bloc.dart';
+import 'package:jogingu_advanced/resources/app_assets.dart';
 import 'package:jogingu_advanced/resources/app_colors.dart';
 import 'package:jogingu_advanced/resources/app_strings.dart';
 import 'package:jogingu_advanced/resources/app_styles.dart';
@@ -20,6 +21,14 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     bloc.onInit();
     super.initState();
+    Timer(
+      const Duration(seconds: 2),
+      () => setState(
+        () {
+          bloc.finishAnimation = true;
+        },
+      ),
+    );
   }
 
   @override
@@ -35,31 +44,27 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.backgroundColor,
-      body: Center(
-        child: Text(
-          AppStrings.appName,
-          style: AppStyles.h3,
-        ),
+    return Scaffold(
+      backgroundColor: AppColors.primaryColor,
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            bottom: bloc.globalData.height * 0.4,
+            child: Text(
+              AppStrings.appName,
+              style: AppStyles.h3.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          AnimatedPositioned(
+            bottom: bloc.getAnimationButtom(),
+            child: Image.asset(AppAssets.logo_splash),
+            duration: const Duration(milliseconds: 500),
+          ),
+        ],
       ),
     );
   }
 }
-
-// class SplashPage extends PageBase<SplashBloc>{
-//   @override
-//   Widget build(BuildContext context) {
-//      print("build SplashPage");
-//     return const Scaffold(
-//       backgroundColor: AppColors.backgroundColor,
-//       body: Center(
-//         child: Text(
-//           AppStrings.appName,
-//           style: AppStyles.h3,
-//         ),
-//       ),
-//     );
-//   }
-	
-// }

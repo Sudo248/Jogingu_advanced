@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 class Run extends Equatable {
@@ -16,7 +15,7 @@ class Run extends Equatable {
 
   const Run({
     required this.runId,
-	required this.key,
+    required this.key,
     required this.name,
     required this.distance,
     required this.avgSpeed,
@@ -41,4 +40,19 @@ class Run extends Equatable {
         stepCount,
         location,
       ];
+
+  Run plus(Run other) {
+    return Run(
+		runId: runId,
+		name: name,
+		key: key,
+        distance: distance + other.distance,
+        avgSpeed : avgSpeed,
+        timeRunning : timeRunning + other.timeRunning,
+        caloBunred:caloBunred + other.caloBunred,
+        timeStart:timeStart,
+        stepCount: stepCount + other.stepCount,
+        location: location,
+	);
+  }
 }
