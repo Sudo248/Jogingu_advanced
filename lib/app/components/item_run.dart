@@ -159,7 +159,7 @@ class _Title extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CircleAvatar(
-          backgroundImage: avatar ?? const AssetImage(AppAssets.avatar),
+          backgroundImage: avatar,
         ),
         const SizedBox(
           width: 10,

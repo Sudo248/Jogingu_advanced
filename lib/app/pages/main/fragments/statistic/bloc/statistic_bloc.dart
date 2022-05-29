@@ -93,13 +93,6 @@ class StatisticBloc extends BlocBase {
     if (runsThisDay != null) {
       showCharInDay();
     }
-    // mokeData(24);
-    // typeChartSC.add(TypeChart.day);
-    // titleNotifer.value = "Today";
-    // totalStepsNotifer.value = 300;
-    // totalCaloriesNotifer.value = 525.5;
-    // totalDistancesNotifer.value = 5;
-    // totalTimeNotifer.value = 3;
   }
 
   void onWeekClick() {
@@ -113,13 +106,6 @@ class StatisticBloc extends BlocBase {
     } else {
       showChartInWeek();
     }
-    // mokeData(7);
-    // typeChartSC.add(TypeChart.week);
-    // titleNotifer.value = "This week";
-    // totalStepsNotifer.value = 500;
-    // totalCaloriesNotifer.value = 3225.5;
-    // totalDistancesNotifer.value = 7;
-    // totalTimeNotifer.value = 5;
   }
 
   void onMonthClick() {
@@ -127,22 +113,12 @@ class StatisticBloc extends BlocBase {
       runRepo.getRunsThisMonth().listen((event) {
         if (event.isSuccess) {
           runsThisMonth = event.data;
-          //   while (runsThisMonth!.length < 7) {
-          //     runsThisMonth!.add(null);
-          //   }
           showChartInMonth();
         }
       });
     } else {
       showChartInMonth();
     }
-    // mokeData(30);
-    // typeChartSC.add(TypeChart.month);
-    // titleNotifer.value = "This month";
-    // totalStepsNotifer.value = 10000;
-    // totalCaloriesNotifer.value = 53925.5;
-    // totalDistancesNotifer.value = 23;
-    // totalTimeNotifer.value = 24;
   }
 
   void showCharInDay() {

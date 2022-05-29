@@ -71,6 +71,12 @@ dependencies:
   # for pick image
   image_picker: ^0.8.5
 
+  # for text to speed
+  flutter_tts: ^3.3.3
+
+  # for launch url
+  url_launcher: ^6.1.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

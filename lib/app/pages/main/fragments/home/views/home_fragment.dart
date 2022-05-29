@@ -16,59 +16,62 @@ class HomeFragment extends BaseFragment<HomeBloc> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Status<List<Run>>>(
-        stream: bloc.runsStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const SizedBox.shrink();
-          return snapshot.data!.when<Widget>(
-            onIdle: () => const SizedBox.shrink(),
-            onLoading: () => const Center(
-              child: SizedBox.square(
-                dimension: 50,
-                child: CircularProgressIndicator(),
+    return RefreshIndicator(
+      onRefresh: bloc.getAll,
+      child: StreamBuilder<Status<List<Run>>>(
+          stream: bloc.runsStream,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const SizedBox.shrink();
+            return snapshot.data!.when<Widget>(
+              onIdle: () => const SizedBox.shrink(),
+              onLoading: () => const Center(
+                child: SizedBox.square(
+                  dimension: 50,
+                  child: CircularProgressIndicator(),
+                ),
               ),
-            ),
-            onSuccess: (data) {
-              if (data.isEmpty) {
-                return SizedBox(
-                  height: size.height * 0.8,
-                  width: size.width,
-                  child: Center(
-                    child: Text(
-                      "No run to show",
-                      style: AppStyles.h3.copyWith(
-                        color: Colors.black,
-                        // fontWeight: FontWeight.bold,
+              onSuccess: (data) {
+                if (data.isEmpty) {
+                  return SizedBox(
+                    height: size.height * 0.8,
+                    width: size.width,
+                    child: Center(
+                      child: Text(
+                        "No run",
+                        style: AppStyles.h3.copyWith(
+                          color: Colors.black,
+                          // fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+                  );
+                }
+                final itemExtent = size.height * 0.5;
+                return ListView.builder(
+                  itemCount: data.length,
+                  shrinkWrap: true,
+				  reverse: true,
+                  itemExtent: itemExtent,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) => ItemRun(
+                    avatar: bloc.avatar,
+                    username: bloc.username,
+                    height: itemExtent,
+                    run: data[index],
+                    onMenuClick: (key) {
+                      showBottomSheet(context, key);
+                    },
                   ),
                 );
-              }
-			  final itemExtent = size.height * 0.5;
-              return ListView.builder(
-                itemCount: data.length,
-                shrinkWrap: true,
-                primary: true,
-				itemExtent: itemExtent,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) => ItemRun(
-                  avatar: bloc.avatar,
-                  username: bloc.username,
-                  height: itemExtent,
-                  run: data[index],
-                  onMenuClick: (key) {
-                    showBottomSheet(context, key);
-                  },
-                ),
-              );
-            },
-            onError: (error) {
-              return Center(
-                child: Text(error.message),
-              );
-            },
-          );
-        });
+              },
+              onError: (error) {
+                return Center(
+                  child: Text(error.message),
+                );
+              },
+            );
+          }),
+    );
   }
 
   void showBottomSheet(BuildContext context, int key) async {
@@ -173,25 +176,31 @@ class ItemBottomSheet extends StatelessWidget {
   final Icon trailing;
   final VoidCallback onTap;
 
-  const ItemBottomSheet({Key? key, required this.title, required this.subtitle, required this.trailing, required this.onTap}) : super(key: key);
+  const ItemBottomSheet(
+      {Key? key,
+      required this.title,
+      required this.subtitle,
+      required this.trailing,
+      required this.onTap})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-	  return ListTile(
-    title: Text(
-      title,
-      style: AppStyles.h5.copyWith(
-        color: Colors.black,
+    return ListTile(
+      title: Text(
+        title,
+        style: AppStyles.h5.copyWith(
+          color: Colors.black,
+        ),
       ),
-    ),
-    subtitle: Text(
-      subtitle,
-      style: AppStyles.h6.copyWith(
-        color: Colors.black,
+      subtitle: Text(
+        subtitle,
+        style: AppStyles.h6.copyWith(
+          color: Colors.black,
+        ),
       ),
-    ),
-    trailing: trailing,
-    onTap: onTap,
-  );
+      trailing: trailing,
+      onTap: onTap,
+    );
   }
 }

@@ -98,7 +98,7 @@ class RunRepositoryImpl implements RunRepository {
     }
   }
 
-  List<Run> getRunsFromTimeInDay(int timeStartInMiliseconds) {
+  Future<List<Run>> getRunsFromTimeInDay(int timeStartInMiliseconds) async{
     try {
       if (runBox == null || runBox!.isEmpty) return List.empty();
       List<Run> res = List.empty(growable: true);
@@ -108,35 +108,6 @@ class RunRepositoryImpl implements RunRepository {
         }
       }
       return res;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  List<Run> getRunsFromTime(int timeStartInMiliseconds) {
-    try {
-      final runsBox = runBox?.values
-              .skipWhile((value) =>
-                  value.timeStartInMiliseconds < timeStartInMiliseconds)
-              .map((e) => e.toRun())
-              .toList() ??
-          List.empty();
-      if (runsBox.isEmpty || runBox?.length == 1) return runsBox;
-      Run initRun = Run(
-          runId: "",
-          key: 0,
-          name: "",
-          distance: 0,
-          avgSpeed: 0,
-          timeRunning: 0,
-          caloBunred: 0,
-          timeStart: DateTime.now(),
-          stepCount: 0,
-          location: "");
-
-      final resRun = List<Run>.empty(growable: true);
-      for (int i = 1; i < runsBox.length; i++) {}
-      return List.empty();
     } catch (e) {
       rethrow;
     }
@@ -153,9 +124,11 @@ class RunRepositoryImpl implements RunRepository {
         dateTime.month,
         dateTime.day,
       );
-      final runsThisDay = getRunsFromTimeInDay(today.millisecondsSinceEpoch);
+
+      final runsThisDay = await getRunsFromTimeInDay(today.millisecondsSinceEpoch);
       
       final List<Run?> result = List.generate(24, (index) => null);
+	
       for (Run run in runsThisDay) {
         result[run.timeStart.hour] = run;
       }
@@ -179,10 +152,15 @@ class RunRepositoryImpl implements RunRepository {
     try {
       final dateTime = DateTime.now();
       final monday = dateTime.subtract(Duration(days: dateTime.weekday - 1));
-      final runsThisWeek = getRunsFromTimeInDay(monday.millisecondsSinceEpoch);
+      final runsThisWeek = await getRunsFromTimeInDay(monday.millisecondsSinceEpoch);
       final List<Run?> result = List.generate(7, (index) => null);
+	  
       for (Run run in runsThisWeek) {
-        result[run.timeStart.weekday - 1] = run;
+		  if(result[run.timeStart.weekday - 1] == null){
+			  result[run.timeStart.weekday - 1] = run;
+		  }else{
+			  result[run.timeStart.weekday - 1] = result[run.timeStart.weekday - 1]!.plus(run);
+		  }
       }
       yield Success(result);
       runBox?.close();
@@ -205,10 +183,14 @@ class RunRepositoryImpl implements RunRepository {
       final theFirstDayOfThisMonth =
           dateTime.subtract(Duration(days: dateTime.day - 1));
       final runsThisMonth =
-          getRunsFromTimeInDay(theFirstDayOfThisMonth.millisecondsSinceEpoch);
+          await getRunsFromTimeInDay(theFirstDayOfThisMonth.millisecondsSinceEpoch);
       final List<Run?> result = List.generate(31, (index) => null);
       for (Run run in runsThisMonth) {
-        result[run.timeStart.day - 1] = run;
+        if(result[run.timeStart.weekday - 1] == null){
+			  result[run.timeStart.weekday - 1] = run;
+		  }else{
+			  result[run.timeStart.weekday - 1] = result[run.timeStart.weekday - 1]!.plus(run);
+		  }
       }
       yield Success(result);
       runBox?.close();

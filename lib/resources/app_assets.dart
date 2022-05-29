@@ -32,4 +32,11 @@ abstract class AppAssets {
   static const String avatar = _imagePath + "avatar.jpg";
   // ignore: constant_identifier_names
   static const String logo_rouned = _imagePath + "logo_rouned.png";
+
+  static const String logo = _imagePath + "logo.png";
+
+  // ignore: constant_identifier_names
+  static const String logo_splash = _imagePath + "logo_splash.gif";
+
+  static const String cup_coffee = _imagePath + "cup_coffee.png";
 }

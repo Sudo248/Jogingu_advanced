@@ -92,6 +92,7 @@ class MainPage extends BasePage<MainBloc> {
         showUnisSelectedLabels: false,
         backgroundColor: Colors.white,
         isSelectedItemColor: AppColors.primaryColor,
+		// elevation: -50,
         notchMargin: size.height / 120,
         height: size.height / 14,
       ),

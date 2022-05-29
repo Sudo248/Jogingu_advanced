@@ -1,25 +1,35 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:jogingu_advanced/app/base/bloc_base.dart';
+import 'package:jogingu_advanced/app/base/di.dart';
+import 'package:jogingu_advanced/app/service/image_service.dart';
 import 'package:jogingu_advanced/app/utils/util.dart';
 import 'package:jogingu_advanced/domain/common/logger.dart';
 import 'package:jogingu_advanced/domain/entities/gender.dart';
 import 'package:jogingu_advanced/domain/repositories/user_repository.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../../../../domain/entities/user.dart';
 
 class ProfileBloc extends BlocBase {
   final UserRepository repo;
+  final imageService = Di.get<ImageService>();
   User? user;
   bool onChange = false;
   DateTime? birthday;
   Gender? gender;
-  String? avatarUrl;
+  File? avatar;
   bool prepareToRun = false;
 
   final GlobalKey<FormState> heightFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> weightFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> birthdayFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> genderFormKey = GlobalKey<FormState>();
+
+  BehaviorSubject<String?> avatarUrl = BehaviorSubject.seeded("");
 
   late final TextEditingController firstNameCtrl,
       lastNameCtrl,
@@ -41,7 +51,6 @@ class ProfileBloc extends BlocBase {
     heightCtrl = TextEditingController();
     weightCtrl = TextEditingController();
     genderCtrl = TextEditingController();
-
   }
 
   @override
@@ -77,11 +86,14 @@ class ProfileBloc extends BlocBase {
       genderCtrl.text = user?.gender.name ?? "";
       birthday = user?.birthday;
       gender = user?.gender;
+      if (user?.avatarUrl != null && user!.avatarUrl!.endsWith(".png")) {
+        avatar = File(user!.avatarUrl!);
+      }
     }
     onListenChange();
   }
 
-  void onListenChange() {
+  void onListenChange() async {
     firstNameCtrl.addListener(() {
       onChange = true;
     });
@@ -111,12 +123,32 @@ class ProfileBloc extends BlocBase {
     });
   }
 
-  void updateBirthday(DateTime? time) {
+  Future<void> pickImage(int selected) async {
+    if (selected == 1) {
+      await imageService.pickImage(ImageSource.gallery,
+          storeImage: (image) async {
+        final String path = (await getApplicationDocumentsDirectory()).path;
+        avatar = await image.copy("$path/avatar.png");
+        avatarUrl.sink.add(avatar?.path);
+        onChange = true;
+      });
+    } else {
+      await imageService.pickImage(ImageSource.camera,
+          storeImage: (image) async {
+        final String path = (await getApplicationDocumentsDirectory()).path;
+        avatar = await image.copy("$path/avatar.png");
+        avatarUrl.sink.add(avatar?.path);
+        onChange = true;
+      });
+    }
+  }
+
+  void updateBirthday(DateTime? time) async {
     birthday = time;
     birthdayCtrl.text = simpleFormatTime(birthday);
   }
 
-  void onChangeGender(String gender) {
+  void onChangeGender(String gender) async {
     this.gender = Gender.values.byName(gender);
   }
 
@@ -137,7 +169,7 @@ class ProfileBloc extends BlocBase {
         birthday: birthday,
         height: double.parse(heightCtrl.text),
         weight: double.parse(weightCtrl.text),
-        avatarUrl: avatarUrl,
+        avatarUrl: avatar?.path,
       );
       if (isUpdate) {
         await repo.update(0, user!);

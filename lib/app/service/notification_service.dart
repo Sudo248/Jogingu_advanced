@@ -19,7 +19,7 @@ class NotificationService {
   Sink<String?> get onNotificationSink => onNotifications.sink;
 
   Future<void> initNotification({bool initScheduled = false}) async {
-    const android = AndroidInitializationSettings("@mipmap/ic_launcher");
+    const android = AndroidInitializationSettings("@mipmap/launcher_icon");
     const iOS = IOSInitializationSettings();
     const settings = InitializationSettings(android: android, iOS: iOS);
 
