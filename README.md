@@ -6,20 +6,20 @@ Using mapbox and text to speech library.
 
 ## Pages
 
-![Splash page](/description/splash.png)
+![Splash page](./description/splash.png)
 
-![Home page](/description/home.png)
+![Home page](./description/home.png)
 
-![Target page](/description/target.png)
+![Target page](./description/target.png)
 
-![Statistic page](/description/home.png)
+![Statistic page](./description/home.png)
 
-![Profile page](/description/profile.png)
+![Profile page](./description/profile.png)
 
-![Run page](/description/run.png)
+![Run page](./description/run.png)
 
-![Running page](/description/running.png)
+![Running page](./description/running.png)
 
-![Finish run page](/description/finish_run.png)
+![Finish run page](./description/finish_run.png)
 
 
